@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>2D Stack Builder</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #1a1a2e;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: white;
+            touch-action: manipulation;
+        }
+        canvas {
+            display: block;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        #ui {
+            position: absolute;
+            top: 20px;
+            text-align: center;
+            pointer-events: none;
+        }
+        #score { font-size: 48px; font-weight: bold; }
+        #msg { font-size: 18px; opacity: 0.8; }
+    </style>
+</head>
+<body>
+
+    <div id="ui">
+        <div id="score">0</div>
+        <div id="msg">Başlamak için dokun veya Boşluk tuşuna bas!</div>
+    </div>
+    <canvas id="gameCanvas"></canvas>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const scoreElement = document.getElementById('score');
+const msgElement = document.getElementById('msg');
+
+// Ayarlar
+canvas.width = window.innerWidth > 500 ? 400 : window.innerWidth;
+canvas.height = window.innerHeight;
+
+let score = 0;
+let gameActive = false;
+let cameraY = 0;
+let colorHue = 200;
+
+const boxHeight = 40;
+const canvasWidth = canvas.width;
+let boxes = [];
+
+function init() {
+    score = 0;
+    colorHue = Math.random() * 360;
+    scoreElement.innerText = score;
+    msgElement.innerText = "Hadi başla!";
+    gameActive = true;
+    cameraY = 0;
+    
+    // İlk zemin bloğu
+    boxes = [{
+        x: canvasWidth * 0.2,
+        y: canvas.height - 100,
+        width: canvasWidth * 0.6,
+        speed: 0,
+        direction: 1
+    }];
+    
+    addNewBox();
+}
+
+function addNewBox() {
+    const lastBox = boxes[boxes.length - 1];
+    const speed = 2 + Math.min(score / 5, 5); // Skor arttıkça hızlanır
+    
+    boxes.push({
+        x: 0,
+        y: lastBox.y - boxHeight,
+        width: lastBox.width,
+        speed: speed,
+        direction: Math.random() > 0.5 ? 1 : -1,
+        color: `hsl(${colorHue}, 60%, 60%)`
+    });
+    colorHue = (colorHue + 15) % 360;
+}
+
+function update() {
+    if (!gameActive) return;
+
+    const currentBox = boxes[boxes.length - 1];
+    
+    if (currentBox.speed !== 0) {
+        currentBox.x += currentBox.speed * currentBox.direction;
+        
+        if (currentBox.x + currentBox.width > canvasWidth || currentBox.x < 0) {
+            currentBox.direction *= -1;
+        }
+    }
+
+    // Kamera takibi
+    const targetCameraY = (boxes.length > 5) ? (boxes.length - 5) * boxHeight : 0;
+    cameraY += (targetCameraY - cameraY) * 0.1;
+
+    draw();
+    requestAnimationFrame(update);
+}
+
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    ctx.save();
+    ctx.translate(0, cameraY);
+
+    boxes.forEach((box, index) => {
+        ctx.fillStyle = box.color || "#4ecca3";
+        ctx.fillRect(box.x, box.y, box.width, box.height);
+        
+        // Kenarlık efekti
+        ctx.strokeStyle = "rgba(0,0,0,0.1)";
+        ctx.strokeRect(box.x, box.y, box.width, box.height);
+    });
+
+    ctx.restore();
+}
+
+function placeBox() {
+    if (!gameActive) {
+        init();
+        update();
+        return;
+    }
+
+    const currentBox = boxes[boxes.length - 1];
+    const previousBox = boxes[boxes.length - 2];
+
+    const leftEdge = Math.max(currentBox.x, previousBox.x);
+    const rightEdge = Math.min(currentBox.x + currentBox.width, previousBox.x + previousBox.width);
+    const newWidth = rightEdge - leftEdge;
+
+    if (newWidth <= 0) {
+        gameOver();
+    } else {
+        // Bloğu kırp ve sabitle
+        currentBox.x = leftEdge;
+        currentBox.width = newWidth;
+        currentBox.speed = 0;
+        
+        score++;
+        scoreElement.innerText = score;
+        msgElement.innerText = "";
+        
+        addNewBox();
+    }
+}
+
+function gameOver() {
+    gameActive = false;
+    msgElement.innerHTML = `Oyun Bitti!<br>Tekrar başlamak için tıkla.`;
+}
+
+// Kontroller
+window.addEventListener('keydown', (e) => { if(e.code === 'Space') placeBox(); });
+canvas.addEventListener('touchstart', (e) => { e.preventDefault(); placeBox(); });
+canvas.addEventListener('mousedown', (e) => { if(e.button === 0) placeBox(); });
+
+// Başlangıç ekranı çizimi
+ctx.fillStyle = "white";
+ctx.textAlign = "center";
+ctx.font = "20px Arial";
+ctx.fillText("Başlamak için Dokun", canvas.width/2, canvas.height/2);
+
+</script>
+</body>
+</html>
