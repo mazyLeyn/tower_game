@@ -1,183 +1,514 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>2D Stack Builder</title>
-    <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-            background-color: #1a1a2e;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            color: white;
-            touch-action: manipulation;
-        }
-        canvas {
-            display: block;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-        }
-        #ui {
-            position: absolute;
-            top: 20px;
-            text-align: center;
-            pointer-events: none;
-        }
-        #score { font-size: 48px; font-weight: bold; }
-        #msg { font-size: 18px; opacity: 0.8; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Stack Builder</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --accent: #e0ff4f;
+    --text: #f0f0f8;
+    --muted: #4a4a6a;
+    --danger: #ff4f6e;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+    font-family: 'Space Mono', monospace;
+    color: var(--text);
+    touch-action: none;
+    user-select: none;
+  }
+
+  #app {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  /* ── HUD ── */
+  #hud {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 20px 28px 0;
+    pointer-events: none;
+  }
+
+  #score-label {
+    font-family: 'Bebas Neue', cursive;
+    font-size: clamp(56px, 12vw, 96px);
+    line-height: 1;
+    color: var(--accent);
+    text-shadow: 0 0 40px rgba(224,255,79,.35);
+    letter-spacing: 2px;
+  }
+
+  #best-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-align: right;
+    line-height: 1.6;
+  }
+  #best-label span { color: var(--accent); font-size: 20px; display: block; }
+
+  /* ── CANVAS ── */
+  #canvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+  }
+
+  /* ── OVERLAY SCREENS ── */
+  .screen {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(10,10,15,.92);
+    backdrop-filter: blur(12px);
+    gap: 20px;
+    transition: opacity .4s ease;
+  }
+  .screen.hidden { opacity: 0; pointer-events: none; }
+
+  .screen-title {
+    font-family: 'Bebas Neue', cursive;
+    font-size: clamp(52px, 14vw, 110px);
+    color: var(--accent);
+    letter-spacing: 4px;
+    text-shadow: 0 0 60px rgba(224,255,79,.4);
+    line-height: 1;
+  }
+
+  .screen-sub {
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    text-align: center;
+    line-height: 2;
+    max-width: 280px;
+  }
+
+  .btn {
+    margin-top: 10px;
+    padding: 14px 42px;
+    background: var(--accent);
+    color: #0a0a0f;
+    border: none;
+    cursor: pointer;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    clip-path: polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);
+    transition: transform .15s, box-shadow .15s;
+    outline: none;
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(224,255,79,.35); }
+  .btn:active { transform: translateY(0); }
+
+  #gameover-score {
+    font-family: 'Bebas Neue', cursive;
+    font-size: clamp(28px, 6vw, 44px);
+    color: var(--text);
+    letter-spacing: 2px;
+  }
+
+  /* ── SPEED BADGE ── */
+  #speed-badge {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    font-size: 10px;
+    letter-spacing: .15em;
+    color: var(--muted);
+    text-transform: uppercase;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .5s;
+  }
+  #speed-badge.show { opacity: 1; }
+
+  /* ── PERFECT FLASH ── */
+  #perfect-flash {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    font-family: 'Bebas Neue', cursive;
+    font-size: 48px;
+    color: var(--accent);
+    letter-spacing: 6px;
+    pointer-events: none;
+    z-index: 300;
+    opacity: 0;
+    text-shadow: 0 0 30px rgba(224,255,79,.7);
+  }
+  @keyframes perfectPop {
+    0%   { opacity:0; transform:translate(-50%,-50%) scale(.6); }
+    30%  { opacity:1; transform:translate(-50%,-55%) scale(1.1); }
+    70%  { opacity:1; transform:translate(-50%,-60%) scale(1); }
+    100% { opacity:0; transform:translate(-50%,-70%) scale(.9); }
+  }
+  #perfect-flash.pop { animation: perfectPop .9s ease forwards; }
+
+  /* grid lines bg */
+  #app::before {
+    content:'';
+    position:fixed;inset:0;
+    background-image:
+      linear-gradient(rgba(224,255,79,.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(224,255,79,.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events:none;
+  }
+</style>
 </head>
 <body>
+<div id="app">
 
-    <div id="ui">
-        <div id="score">0</div>
-        <div id="msg">Başlamak için dokun veya Boşluk tuşuna bas!</div>
-    </div>
-    <canvas id="gameCanvas"></canvas>
+  <!-- HUD -->
+  <div id="hud">
+    <div id="score-label">0</div>
+    <div id="best-label">BEST<span id="best-val">0</span></div>
+  </div>
+
+  <!-- Canvas -->
+  <canvas id="canvas"></canvas>
+
+  <!-- Perfect flash -->
+  <div id="perfect-flash">PERFECT</div>
+
+  <!-- Speed badge -->
+  <div id="speed-badge">⚡ Speed Up!</div>
+
+  <!-- Start screen -->
+  <div class="screen" id="start-screen">
+    <div class="screen-title">STACK<br>BUILDER</div>
+    <div class="screen-sub">Tap or press <strong>SPACE</strong> to place blocks.<br>Build as high as you can.</div>
+    <button class="btn" id="start-btn">START GAME</button>
+  </div>
+
+  <!-- Game Over screen -->
+  <div class="screen hidden" id="gameover-screen">
+    <div class="screen-title">GAME<br>OVER</div>
+    <div id="gameover-score">SCORE — 0</div>
+    <div class="screen-sub">Blocks slipped — tower collapsed.</div>
+    <button class="btn" id="restart-btn">TRY AGAIN</button>
+  </div>
+
+</div>
 
 <script>
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-const scoreElement = document.getElementById('score');
-const msgElement = document.getElementById('msg');
+(() => {
+  // ── CONFIG ──────────────────────────────────────────────────────
+  const BLOCK_H       = 28;       // px height of each block
+  const BASE_SPEED    = 2.8;      // initial block speed
+  const SPEED_STEP    = 0.22;     // speed increase per 5 scores
+  const PERFECT_TOL   = 4;        // px threshold for "perfect" snap
+  const CAMERA_EASE   = 0.08;     // lerp factor for camera
+  const GROUND_BLOCKS = 4;        // pre-built base blocks
+  const BG_COLOR      = '#0a0a0f';
 
-// Ayarlar
-canvas.width = window.innerWidth > 500 ? 400 : window.innerWidth;
-canvas.height = window.innerHeight;
+  // ── STATE ───────────────────────────────────────────────────────
+  let blocks = [], moving = null;
+  let score = 0, best = 0;
+  let hue = 160;
+  let cameraY = 0, targetCameraY = 0;
+  let gameRunning = false;
+  let animId = null;
+  let speedBadgeTimer = null;
 
-let score = 0;
-let gameActive = false;
-let cameraY = 0;
-let colorHue = 200;
+  // ── DOM ─────────────────────────────────────────────────────────
+  const canvas       = document.getElementById('canvas');
+  const ctx          = canvas.getContext('2d');
+  const scoreEl      = document.getElementById('score-label');
+  const bestEl       = document.getElementById('best-val');
+  const startScreen  = document.getElementById('start-screen');
+  const goScreen     = document.getElementById('gameover-screen');
+  const goScore      = document.getElementById('gameover-score');
+  const startBtn     = document.getElementById('start-btn');
+  const restartBtn   = document.getElementById('restart-btn');
+  const perfectEl    = document.getElementById('perfect-flash');
+  const speedBadge   = document.getElementById('speed-badge');
 
-const boxHeight = 40;
-const canvasWidth = canvas.width;
-let boxes = [];
+  // ── RESIZE ──────────────────────────────────────────────────────
+  function resize() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resize);
+  resize();
 
-function init() {
-    score = 0;
-    colorHue = Math.random() * 360;
-    scoreElement.innerText = score;
-    msgElement.innerText = "Hadi başla!";
-    gameActive = true;
-    cameraY = 0;
-    
-    // İlk zemin bloğu
-    boxes = [{
-        x: canvasWidth * 0.2,
-        y: canvas.height - 100,
-        width: canvasWidth * 0.6,
-        speed: 0,
-        direction: 1
-    }];
-    
-    addNewBox();
-}
+  // ── HELPERS ─────────────────────────────────────────────────────
+  function blockColor(h) {
+    return `hsl(${h % 360}, 72%, 62%)`;
+  }
 
-function addNewBox() {
-    const lastBox = boxes[boxes.length - 1];
-    const speed = 2 + Math.min(score / 5, 5); // Skor arttıkça hızlanır
-    
-    boxes.push({
-        x: 0,
-        y: lastBox.y - boxHeight,
-        width: lastBox.width,
-        speed: speed,
-        direction: Math.random() > 0.5 ? 1 : -1,
-        color: `hsl(${colorHue}, 60%, 60%)`
-    });
-    colorHue = (colorHue + 15) % 360;
-}
+  function blockGradient(h, x, y, w, ht) {
+    const g = ctx.createLinearGradient(x, y, x + w, y + ht);
+    g.addColorStop(0,   `hsl(${h % 360}, 72%, 68%)`);
+    g.addColorStop(1,   `hsl(${(h + 30) % 360}, 65%, 48%)`);
+    return g;
+  }
 
-function update() {
-    if (!gameActive) return;
+  function getSpeed() {
+    return BASE_SPEED + Math.floor(score / 5) * SPEED_STEP;
+  }
 
-    const currentBox = boxes[boxes.length - 1];
-    
-    if (currentBox.speed !== 0) {
-        currentBox.x += currentBox.speed * currentBox.direction;
-        
-        if (currentBox.x + currentBox.width > canvasWidth || currentBox.x < 0) {
-            currentBox.direction *= -1;
-        }
+  // ── BLOCK FACTORY ───────────────────────────────────────────────
+  function makeBase() {
+    const W = canvas.width;
+    const bw = Math.min(W * 0.55, 260);
+    const cx = W / 2 - bw / 2;
+    return { x: cx, w: bw, y: 0, color: 160 };
+  }
+
+  function spawnMoving() {
+    const last = blocks[blocks.length - 1];
+    const dir  = (Math.random() < 0.5) ? 1 : -1;
+    const startX = dir === 1 ? -last.w - 20 : canvas.width + 20;
+    hue = (hue + 18) % 360;
+    moving = {
+      x: startX,
+      w: last.w,
+      y: last.y - BLOCK_H,
+      dir,
+      color: hue
+    };
+  }
+
+  // ── INIT GAME ───────────────────────────────────────────────────
+  function initGame() {
+    blocks = [];
+    score  = 0;
+    hue    = 160;
+
+    const base = makeBase();
+    // stack a few ground blocks
+    for (let i = 0; i < GROUND_BLOCKS; i++) {
+      blocks.push({ x: base.x, w: base.w, y: -i * BLOCK_H, color: hue + i * 15 });
     }
 
-    // Kamera takibi
-    const targetCameraY = (boxes.length > 5) ? (boxes.length - 5) * boxHeight : 0;
-    cameraY += (targetCameraY - cameraY) * 0.1;
+    // camera: bottom of stack visible at bottom of canvas, some margin
+    const topBlock = blocks[blocks.length - 1];
+    targetCameraY = topBlock.y - canvas.height * 0.7;
+    cameraY = targetCameraY;
 
-    draw();
-    requestAnimationFrame(update);
-}
+    scoreEl.textContent = '0';
+    spawnMoving();
+  }
 
-function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    ctx.save();
-    ctx.translate(0, cameraY);
+  // ── PLACE BLOCK ─────────────────────────────────────────────────
+  function placeBlock() {
+    if (!moving || !gameRunning) return;
+    const last  = blocks[blocks.length - 1];
 
-    boxes.forEach((box, index) => {
-        ctx.fillStyle = box.color || "#4ecca3";
-        ctx.fillRect(box.x, box.y, box.width, box.height);
-        
-        // Kenarlık efekti
-        ctx.strokeStyle = "rgba(0,0,0,0.1)";
-        ctx.strokeRect(box.x, box.y, box.width, box.height);
-    });
+    const overlapStart = Math.max(moving.x, last.x);
+    const overlapEnd   = Math.min(moving.x + moving.w, last.x + last.w);
+    const overlap      = overlapEnd - overlapStart;
 
-    ctx.restore();
-}
-
-function placeBox() {
-    if (!gameActive) {
-        init();
-        update();
-        return;
+    if (overlap <= 0) {
+      // miss — game over
+      endGame();
+      return;
     }
 
-    const currentBox = boxes[boxes.length - 1];
-    const previousBox = boxes[boxes.length - 2];
+    const diff = Math.abs(moving.x - last.x);
 
-    const leftEdge = Math.max(currentBox.x, previousBox.x);
-    const rightEdge = Math.min(currentBox.x + currentBox.width, previousBox.x + previousBox.width);
-    const newWidth = rightEdge - leftEdge;
-
-    if (newWidth <= 0) {
-        gameOver();
+    // perfect snap
+    if (diff <= PERFECT_TOL) {
+      moving.x = last.x;
+      moving.w = last.w;
+      triggerPerfect();
     } else {
-        // Bloğu kırp ve sabitle
-        currentBox.x = leftEdge;
-        currentBox.width = newWidth;
-        currentBox.speed = 0;
-        
-        score++;
-        scoreElement.innerText = score;
-        msgElement.innerText = "";
-        
-        addNewBox();
+      moving.w = overlap;
+      moving.x = overlapStart;
     }
-}
 
-function gameOver() {
-    gameActive = false;
-    msgElement.innerHTML = `Oyun Bitti!<br>Tekrar başlamak için tıkla.`;
-}
+    blocks.push({ x: moving.x, w: moving.w, y: moving.y, color: moving.color });
+    score++;
+    scoreEl.textContent = score;
+    if (score > best) { best = score; bestEl.textContent = best; }
 
-// Kontroller
-window.addEventListener('keydown', (e) => { if(e.code === 'Space') placeBox(); });
-canvas.addEventListener('touchstart', (e) => { e.preventDefault(); placeBox(); });
-canvas.addEventListener('mousedown', (e) => { if(e.button === 0) placeBox(); });
+    // speed badge on multiples of 5
+    if (score % 5 === 0) showSpeedBadge();
 
-// Başlangıç ekranı çizimi
-ctx.fillStyle = "white";
-ctx.textAlign = "center";
-ctx.font = "20px Arial";
-ctx.fillText("Başlamak için Dokun", canvas.width/2, canvas.height/2);
+    // adjust camera target
+    const newTop = blocks[blocks.length - 1];
+    targetCameraY = newTop.y - canvas.height * 0.68;
 
+    spawnMoving();
+  }
+
+  // ── PERFECT FLASH ───────────────────────────────────────────────
+  function triggerPerfect() {
+    perfectEl.classList.remove('pop');
+    void perfectEl.offsetWidth; // reflow
+    perfectEl.classList.add('pop');
+  }
+
+  // ── SPEED BADGE ─────────────────────────────────────────────────
+  function showSpeedBadge() {
+    speedBadge.classList.add('show');
+    clearTimeout(speedBadgeTimer);
+    speedBadgeTimer = setTimeout(() => speedBadge.classList.remove('show'), 1800);
+  }
+
+  // ── END GAME ────────────────────────────────────────────────────
+  function endGame() {
+    gameRunning = false;
+    goScore.textContent = `SCORE — ${score}`;
+    goScreen.classList.remove('hidden');
+  }
+
+  // ── DRAW ────────────────────────────────────────────────────────
+  function drawBlock(b, alpha = 1) {
+    const screenY = b.y - cameraY;
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = blockGradient(b.color, b.x, screenY, b.w, BLOCK_H);
+    ctx.beginPath();
+    ctx.roundRect(b.x, screenY, b.w, BLOCK_H, 3);
+    ctx.fill();
+
+    // top highlight
+    ctx.globalAlpha = alpha * 0.35;
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.roundRect(b.x + 2, screenY + 2, b.w - 4, 5, 2);
+    ctx.fill();
+
+    // bottom shadow stripe
+    ctx.globalAlpha = alpha * 0.25;
+    ctx.fillStyle = '#000000';
+    ctx.beginPath();
+    ctx.roundRect(b.x + 2, screenY + BLOCK_H - 6, b.w - 4, 4, 2);
+    ctx.fill();
+
+    ctx.globalAlpha = 1;
+  }
+
+  function drawMoving() {
+    if (!moving) return;
+    const screenY = moving.y - cameraY;
+    // ghost line
+    ctx.strokeStyle = `hsla(${moving.color}, 70%, 60%, 0.18)`;
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 6]);
+    ctx.beginPath();
+    ctx.moveTo(moving.x, screenY + BLOCK_H / 2);
+    ctx.lineTo(moving.x + moving.w, screenY + BLOCK_H / 2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    drawBlock(moving, 0.92);
+  }
+
+  function drawBackground() {
+    ctx.fillStyle = BG_COLOR;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
+
+  function drawShadow() {
+    // drop shadow under each block
+    blocks.forEach(b => {
+      const screenY = b.y - cameraY;
+      if (screenY > canvas.height + 30 || screenY < -60) return;
+      ctx.globalAlpha = 0.12;
+      ctx.fillStyle = '#000';
+      ctx.beginPath();
+      ctx.ellipse(b.x + b.w / 2, screenY + BLOCK_H + 6, b.w * 0.45, 5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    });
+  }
+
+  // ── GAME LOOP ───────────────────────────────────────────────────
+  function loop() {
+    drawBackground();
+
+    // smooth camera
+    cameraY += (targetCameraY - cameraY) * CAMERA_EASE;
+
+    // update moving block
+    if (moving && gameRunning) {
+      const speed = getSpeed();
+      moving.x += moving.dir * speed;
+      // bounce
+      if (moving.x > canvas.width + 10)  moving.dir = -1;
+      if (moving.x + moving.w < -10)     moving.dir =  1;
+    }
+
+    // draw placed blocks (only visible ones for perf)
+    blocks.forEach(b => {
+      const screenY = b.y - cameraY;
+      if (screenY > canvas.height + 30 || screenY < -60) return;
+      drawBlock(b);
+    });
+    drawShadow();
+    drawMoving();
+
+    animId = requestAnimationFrame(loop);
+  }
+
+  // ── INPUT ───────────────────────────────────────────────────────
+  function handleAction() {
+    if (gameRunning) placeBlock();
+  }
+
+  window.addEventListener('keydown', e => {
+    if (e.code === 'Space') { e.preventDefault(); handleAction(); }
+  });
+  canvas.addEventListener('pointerdown', e => {
+    e.preventDefault();
+    handleAction();
+  });
+
+  // ── START / RESTART ─────────────────────────────────────────────
+  function startGame() {
+    startScreen.classList.add('hidden');
+    goScreen.classList.add('hidden');
+    initGame();
+    gameRunning = true;
+    if (animId) cancelAnimationFrame(animId);
+    loop();
+  }
+
+  startBtn.addEventListener('click',   startGame);
+  restartBtn.addEventListener('click', startGame);
+
+  // also allow space on start screen
+  window.addEventListener('keydown', e => {
+    if (e.code === 'Space' && !gameRunning) {
+      e.preventDefault();
+      startGame();
+    }
+  });
+
+  // initial loop to show bg while on start screen
+  loop();
+})();
 </script>
 </body>
 </html>
