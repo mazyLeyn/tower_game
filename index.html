@@ -13,38 +13,35 @@
     --bg: #0a0a0f; --surface: #12121a; --surface2: #1a1a28;
     --accent: #e0ff4f; --accent-rgb: 224,255,79;
     --text: #f0f0f8; --muted: #4a4a6a; --danger: #ff4f6e;
-    --grid-color: rgba(224,255,79,0.035); --streak-color: #ffd700;
+    --streak-color: #ffd700;
   }
-  body[data-theme="cyber"]  { --bg:#0a0a0f; --surface:#12121a; --surface2:#1a1a28; --accent:#e0ff4f; --accent-rgb:224,255,79; --grid-color:rgba(224,255,79,0.035); }
-  body[data-theme="neon"]   { --bg:#080010; --surface:#110020; --surface2:#1a0030; --accent:#bf5fff; --accent-rgb:191,95,255; --grid-color:rgba(191,95,255,0.04); }
-  body[data-theme="ice"]    { --bg:#050d14; --surface:#0a1825; --surface2:#0f2030; --accent:#4ff0ff; --accent-rgb:79,240,255; --grid-color:rgba(79,240,255,0.035); }
-  body[data-theme="fire"]   { --bg:#0f0500; --surface:#1a0a00; --surface2:#281000; --accent:#ff6b1a; --accent-rgb:255,107,26; --grid-color:rgba(255,107,26,0.04); }
-  body[data-theme="matrix"] { --bg:#000a00; --surface:#001200; --surface2:#001a00; --accent:#00ff41; --accent-rgb:0,255,65; --grid-color:rgba(0,255,65,0.04); }
+  body[data-theme="cyber"]  { --bg:#0a0a0f; --surface:#12121a; --surface2:#1a1a28; --accent:#e0ff4f; --accent-rgb:224,255,79; }
+  body[data-theme="neon"]   { --bg:#080010; --surface:#110020; --surface2:#1a0030; --accent:#bf5fff; --accent-rgb:191,95,255; }
+  body[data-theme="ice"]    { --bg:#050d14; --surface:#0a1825; --surface2:#0f2030; --accent:#4ff0ff; --accent-rgb:79,240,255; }
+  body[data-theme="fire"]   { --bg:#0f0500; --surface:#1a0a00; --surface2:#281000; --accent:#ff6b1a; --accent-rgb:255,107,26; }
+  body[data-theme="matrix"] { --bg:#000a00; --surface:#001200; --surface2:#001a00; --accent:#00ff41; --accent-rgb:0,255,65; }
 
-  html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); font-family:'Space Mono',monospace; color:var(--text); touch-action:none; user-select:none; transition:background 0.5s; }
+  html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); font-family:'Space Mono',monospace; color:var(--text); touch-action:none; user-select:none; }
   #app { position:relative; width:100vw; height:100vh; display:flex; flex-direction:column; align-items:center; overflow:hidden; }
 
-  /* HUD */
   #hud { position:fixed; top:0; left:0; right:0; z-index:100; display:flex; justify-content:space-between; align-items:flex-start; padding:20px 28px 0; pointer-events:none; }
-  #score-label { font-family:'Bebas Neue',cursive; font-size:clamp(56px,12vw,96px); line-height:1; color:var(--accent); text-shadow:0 0 40px rgba(var(--accent-rgb),.35); letter-spacing:2px; transition:text-shadow 0.3s; }
+  #score-label { font-family:'Bebas Neue',cursive; font-size:clamp(56px,12vw,96px); line-height:1; color:var(--accent); text-shadow:0 0 40px rgba(var(--accent-rgb),.35); letter-spacing:2px; will-change:transform; }
   #score-label.combo-glow { text-shadow:0 0 60px rgba(var(--accent-rgb),.9),0 0 100px rgba(var(--accent-rgb),.4); }
   #stats-col { display:flex; flex-direction:column; align-items:flex-end; gap:4px; }
   #best-label { font-size:11px; color:var(--muted); text-align:right; line-height:1.6; }
   #best-label span { color:var(--accent); font-size:20px; display:block; font-family:'Bebas Neue',cursive; letter-spacing:2px; }
 
-  /* Streak */
   #streak-label { font-size:11px; color:var(--muted); text-align:right; line-height:1.6; letter-spacing:.05em; }
   #streak-val-wrap { display:flex; align-items:baseline; justify-content:flex-end; gap:2px; }
-  #streak-val { font-family:'Bebas Neue',cursive; font-size:20px; letter-spacing:2px; color:var(--streak-color); text-shadow:0 0 12px rgba(255,215,0,.5); transition:color .3s; display:inline-block; }
+  #streak-val { font-family:'Bebas Neue',cursive; font-size:20px; letter-spacing:2px; color:var(--streak-color); text-shadow:0 0 12px rgba(255,215,0,.5); display:inline-block; }
   #streak-suffix { font-family:'Bebas Neue',cursive; font-size:14px; color:rgba(255,215,0,.6); letter-spacing:1px; }
   @keyframes streakPulse {
-    0%  { transform:scale(1);    text-shadow:0 0 12px rgba(255,215,0,.5); }
-    40% { transform:scale(1.35); text-shadow:0 0 28px rgba(255,215,0,.9),0 0 50px rgba(255,215,0,.4); }
-    100%{ transform:scale(1);    text-shadow:0 0 12px rgba(255,215,0,.5); }
+    0%  { transform:scale(1); }
+    40% { transform:scale(1.35); }
+    100%{ transform:scale(1); }
   }
-  #streak-val.pulse { animation:streakPulse 0.5s ease forwards; }
+  #streak-val.pulse { animation:streakPulse 0.4s ease forwards; }
 
-  /* STREAK MODE INDICATOR */
   #streak-mode-badge {
     position:fixed; top:50%; right:20px; transform:translateY(-50%);
     z-index:120; pointer-events:none;
@@ -56,26 +53,22 @@
   #streak-mode-text { font-family:'Bebas Neue',cursive; font-size:10px; letter-spacing:.2em; color:var(--streak-color); text-shadow:0 0 10px rgba(255,215,0,.6); }
   @keyframes floatIcon { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
 
-  /* Settings btn */
   #settings-btn { position:fixed; top:18px; left:50%; transform:translateX(-50%); z-index:120; background:none; border:1px solid rgba(var(--accent-rgb),.2); color:var(--muted); cursor:pointer; border-radius:50%; width:34px; height:34px; font-size:16px; display:flex; align-items:center; justify-content:center; transition:all .2s; pointer-events:all; }
   #settings-btn:hover { border-color:var(--accent); color:var(--accent); transform:translateX(-50%) rotate(45deg); }
 
-  /* Combo HUD */
-  #combo-hud { position:fixed; top:0; left:50%; transform:translateX(-50%); z-index:110; display:flex; flex-direction:column; align-items:center; padding-top:60px; pointer-events:none; opacity:0; transition:opacity 0.3s; }
+  #combo-hud { position:fixed; top:0; left:50%; transform:translateX(-50%); z-index:110; display:flex; flex-direction:column; align-items:center; padding-top:60px; pointer-events:none; opacity:0; transition:opacity 0.2s; }
   #combo-hud.visible { opacity:1; }
   #combo-count { font-family:'Bebas Neue',cursive; font-size:clamp(28px,6vw,46px); letter-spacing:4px; color:var(--accent); text-shadow:0 0 20px rgba(var(--accent-rgb),.8); line-height:1; }
   #combo-label { font-size:9px; letter-spacing:0.25em; color:rgba(var(--accent-rgb),.6); text-transform:uppercase; margin-top:2px; }
 
-  #canvas { position:absolute; top:0; left:0; width:100%; height:100%; }
+  #canvas { position:absolute; top:0; left:0; width:100%; height:100%; image-rendering:auto; }
 
-  /* Screens */
-  .screen { position:fixed; inset:0; z-index:200; display:flex; flex-direction:column; align-items:center; justify-content:center; background:rgba(10,10,15,.93); backdrop-filter:blur(14px); gap:0; transition:opacity .4s ease; }
+  .screen { position:fixed; inset:0; z-index:200; display:flex; flex-direction:column; align-items:center; justify-content:center; background:rgba(10,10,15,.93); backdrop-filter:blur(14px); transition:opacity .4s ease; }
   .screen.hidden { opacity:0; pointer-events:none; }
   .screen-title { font-family:'Bebas Neue',cursive; font-size:clamp(64px,18vw,130px); color:var(--accent); letter-spacing:4px; text-shadow:0 0 80px rgba(var(--accent-rgb),.5),0 0 160px rgba(var(--accent-rgb),.2); line-height:0.9; text-align:center; margin-bottom:10px; }
   .screen-title .sub-title { display:block; font-size:clamp(14px,3vw,22px); letter-spacing:10px; color:rgba(var(--accent-rgb),.5); text-shadow:none; margin-top:4px; }
   .screen-sub { font-size:11px; color:var(--muted); letter-spacing:.12em; text-transform:uppercase; text-align:center; line-height:2.2; max-width:260px; margin-bottom:8px; }
 
-  /* Buttons */
   .btn { padding:13px 38px; background:var(--accent); color:#0a0a0f; border:none; cursor:pointer; font-family:'Space Mono',monospace; font-size:12px; font-weight:700; letter-spacing:.18em; text-transform:uppercase; clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%); transition:transform .15s,box-shadow .15s; outline:none; margin-top:8px; }
   .btn:hover { transform:translateY(-2px); box-shadow:0 8px 30px rgba(var(--accent-rgb),.4); }
   .btn:active { transform:translateY(0); }
@@ -84,11 +77,9 @@
 
   #menu-best-row { margin-top:18px; font-size:10px; color:var(--muted); letter-spacing:.15em; text-align:center; display:none; }
 
-  /* Speed badge */
   #speed-badge { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); z-index:100; font-size:10px; letter-spacing:.15em; color:var(--muted); text-transform:uppercase; pointer-events:none; opacity:0; transition:opacity .5s; }
   #speed-badge.show { opacity:1; }
 
-  /* Perfect flash */
   #perfect-flash { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); font-family:'Bebas Neue',cursive; font-size:48px; color:var(--accent); letter-spacing:6px; pointer-events:none; z-index:300; opacity:0; text-shadow:0 0 30px rgba(var(--accent-rgb),.7); }
   @keyframes perfectPop {
     0%  { opacity:0; transform:translate(-50%,-50%) scale(.6); }
@@ -99,7 +90,6 @@
   #perfect-flash.pop { animation:perfectPop .9s ease forwards; }
   #perfect-flash.pop.tier3 { color:var(--streak-color); text-shadow:0 0 40px rgba(255,215,0,.9); font-size:58px; }
 
-  /* Settings panel */
   #settings-panel { position:fixed; inset:0; z-index:500; display:flex; align-items:center; justify-content:center; background:rgba(5,5,10,.88); backdrop-filter:blur(18px); opacity:0; pointer-events:none; transition:opacity .3s; }
   #settings-panel.open { opacity:1; pointer-events:all; }
   .settings-card { background:var(--surface); border:1px solid rgba(var(--accent-rgb),.12); border-radius:16px; padding:28px 28px 22px; width:min(380px,90vw); max-height:90vh; overflow-y:auto; box-shadow:0 0 60px rgba(var(--accent-rgb),.08); }
@@ -113,7 +103,7 @@
   .setting-row label { font-size:11px; color:var(--text); letter-spacing:.05em; flex:1; }
   .setting-row .val { font-size:11px; color:var(--accent); min-width:28px; text-align:right; font-variant-numeric:tabular-nums; }
   input[type=range] { flex:2; -webkit-appearance:none; appearance:none; height:3px; background:var(--surface2); border-radius:2px; outline:none; accent-color:var(--accent); }
-  input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:14px; height:14px; background:var(--accent); border-radius:50%; cursor:pointer; box-shadow:0 0 8px rgba(var(--accent-rgb),.6); }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:14px; height:14px; background:var(--accent); border-radius:50%; cursor:pointer; }
   .toggle-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
   .toggle-row label { font-size:11px; color:var(--text); }
   .toggle { position:relative; width:38px; height:20px; background:var(--surface2); border-radius:10px; cursor:pointer; transition:background .2s; flex-shrink:0; border:1px solid rgba(255,255,255,.08); }
@@ -142,7 +132,6 @@
     </div>
   </div>
 
-  <!-- Streak mode side badge -->
   <div id="streak-mode-badge">
     <div id="streak-mode-icon">🔥</div>
     <div id="streak-mode-text">STREAK MODE</div>
@@ -186,11 +175,6 @@
       </div>
       <div class="s-divider"></div>
       <div class="settings-section">
-        <span class="settings-section-label">📳 Haptic</span>
-        <div class="toggle-row"><label>Vibration Feedback</label><div class="toggle on" id="tog-haptic" data-key="haptic"></div></div>
-      </div>
-      <div class="s-divider"></div>
-      <div class="settings-section">
         <span class="settings-section-label">✨ Visuals</span>
         <div class="toggle-row"><label>Particles</label><div class="toggle on" id="tog-particles" data-key="particles"></div></div>
         <div class="toggle-row"><label>Screen Shake</label><div class="toggle on" id="tog-shake" data-key="shake"></div></div>
@@ -215,24 +199,28 @@
 
 <script>
 (() => {
-  // ── CONFIG ───────────────────────────────────────────────────────
+  // ── CONFIG ──────────────────────────────────────────────────────
   const BLOCK_H       = 28;
   const BASE_SPEED    = 2.8;
   const SPEED_STEP    = 0.22;
   const PERFECT_TOL   = 4;
   const CAMERA_EASE   = 0.08;
   const GROUND_BLOCKS = 4;
-  const STREAK_THRESH = 3; // consecutive perfects to activate streak mode
+  const STREAK_THRESH = 3;
+  const MAX_PARTICLES = 50;
+  const MAX_CHUNKS    = 12;
+  const MAX_SHOCKWAVES= 4;
+  const STAR_COUNT    = 120;
 
-  // ── SETTINGS ────────────────────────────────────────────────────
+  // ── SETTINGS ───────────────────────────────────────────────────
   const S = {
-    music: true, sfx: true, haptic: true,
+    music: true, sfx: true,
     particles: true, shake: true,
     musicVol: 0.72, sfxVol: 0.80, gridOpacity: 0.50,
     theme: 'cyber',
   };
 
-  // ── STATE ────────────────────────────────────────────────────────
+  // ── STATE ───────────────────────────────────────────────────────
   let blocks = [], moving = null;
   let score = 0, best = 0;
   let hue = 160;
@@ -242,26 +230,27 @@
   let speedBadgeTimer = null;
   let isFirstGame = true;
 
+  // Pooled arrays — avoid repeated GC
   let particles = [], fallingChunks = [], shockwaves = [];
-  let screenShake = { x:0, y:0, mag:0, decay:0.85 };
+  let screenShake = { x:0, y:0, mag:0 };
   let comboCount = 0;
-
   let currentStreak = 0;
   let bestStreak = parseInt(localStorage.getItem('sb_best_streak') || '0');
-
-  // ── STREAK MODE state ────────────────────────────────────────────
-  // "streak mode" = currentStreak >= STREAK_THRESH while game running
   let streakModeActive = false;
 
-  const BG_LAYERS = [
-    { speed:0.08, alpha:0.04,  size:120 },
-    { speed:0.18, alpha:0.035, size:60  },
-    { speed:0.32, alpha:0.03,  size:25  },
-  ];
+  // ── CAMERA EASE ─────────────────────────────────────────────────
+  let cameraEaseT = 0, cameraEaseFrom = 0, cameraEaseTo = 0, cameraEasing = false;
 
-  // ── DOM ──────────────────────────────────────────────────────────
+  // ── OFFSCREEN / CACHED CANVASES ────────────────────────────────
+  // Pre-render the static grid into an offscreen canvas when opacity changes
+  let gridCanvas = null, gridDirty = true;
+  let bgCanvas = null, bgW = 0, bgH = 0;
+  // Star positions (computed once on resize)
+  let stars = [];
+
+  // ── DOM ─────────────────────────────────────────────────────────
   const canvas          = document.getElementById('canvas');
-  const ctx             = canvas.getContext('2d');
+  const ctx             = canvas.getContext('2d', { alpha: false });
   const scoreEl         = document.getElementById('score-label');
   const bestEl          = document.getElementById('best-val');
   const streakValEl     = document.getElementById('streak-val');
@@ -283,897 +272,961 @@
 
   streakValEl.textContent = bestStreak;
 
-  function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-  window.addEventListener('resize', resize); resize();
-
-  // ── HELPERS ──────────────────────────────────────────────────────
-  function lerp(a,b,t){ return a+(b-a)*t; }
-  function easeOutElastic(t){
-    const c4=(2*Math.PI)/4.5;
-    return t===0?0:t===1?1:Math.pow(2,-10*t)*Math.sin((t*10-0.75)*c4)+1;
+  // ── RESIZE ──────────────────────────────────────────────────────
+  function resize() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+    buildStars();
+    gridDirty = true; // rebuild grid cache
+    bgW = 0; // force bg cache rebuild
   }
-  function getSpeed(){ return BASE_SPEED+Math.floor(score/5)*SPEED_STEP; }
+  window.addEventListener('resize', resize);
+  resize();
 
-  // ── HAPTIC ───────────────────────────────────────────────────────
-  function haptic(pattern){
-    if (!S.haptic || !navigator.vibrate) return;
-    try { navigator.vibrate(pattern); } catch(e){}
+  // ── HELPERS ─────────────────────────────────────────────────────
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function easeOutElastic(t) {
+    const c4 = (2 * Math.PI) / 4.5;
+    return t === 0 ? 0 : t === 1 ? 1 : Math.pow(2, -10*t) * Math.sin((t*10-0.75)*c4) + 1;
   }
-  // pattern presets
-  const HAP_PLACE    = 18;           // plain block drop — subtle
-  const HAP_PERFECT  = 40;           // single clean pulse
-  const HAP_PERFECT2 = [40,30,40];   // double tap (tier 2)
-  const HAP_PERFECT3 = [40,20,40,20,60]; // triple+ — richer
-  const HAP_GAMEOVER = [60,40,120];  // game over thud
+  function getSpeed() { return BASE_SPEED + Math.floor(score / 5) * SPEED_STEP; }
 
-  // ── STREAK UI ────────────────────────────────────────────────────
-  function updateStreakUI(isNewRecord){
+  // ── STREAK UI ───────────────────────────────────────────────────
+  function updateStreakUI(isNewRecord) {
     streakValEl.textContent = bestStreak;
-    if(isNewRecord){
+    if (isNewRecord) {
       streakValEl.classList.remove('pulse');
       void streakValEl.offsetWidth;
       streakValEl.classList.add('pulse');
     }
   }
-  function recordStreak(n){
+  function recordStreak(n) {
     currentStreak = n;
-    if(n > bestStreak){
+    if (n > bestStreak) {
       bestStreak = n;
       localStorage.setItem('sb_best_streak', bestStreak);
       updateStreakUI(true);
     }
   }
 
-  // ── STREAK MODE toggle ───────────────────────────────────────────
-  function setStreakMode(active){
-    if(streakModeActive === active) return;
+  function setStreakMode(active) {
+    if (streakModeActive === active) return;
     streakModeActive = active;
     streakModeBadge.classList.toggle('visible', active);
     applyMusicStreakMode(active);
   }
 
-  // ── AUDIO ENGINE ─────────────────────────────────────────────────
+  // ── AUDIO ENGINE ────────────────────────────────────────────────
   let audioCtx = null;
-  function getAudio(){
-    if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
-    if(audioCtx.state==='suspended') audioCtx.resume();
+  function getAudio() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
     return audioCtx;
   }
 
-  function playTone({ type='sine', freq=440, freqEnd=null, vol=0.18, attack=0.005, decay=0.12, t=null }){
-    if(!S.sfx) return;
+  function playTone({ type='sine', freq=440, freqEnd=null, vol=0.18, attack=0.005, decay=0.12, t=null }) {
+    if (!S.sfx) return;
     try {
-      const ac=getAudio(), now=t??ac.currentTime;
-      const osc=ac.createOscillator(), gain=ac.createGain();
+      const ac = getAudio(), now = t ?? ac.currentTime;
+      const osc = ac.createOscillator(), gain = ac.createGain();
       osc.connect(gain); gain.connect(ac.destination);
-      osc.type=type; osc.frequency.setValueAtTime(freq,now);
-      if(freqEnd!==null) osc.frequency.exponentialRampToValueAtTime(freqEnd,now+decay);
-      const v=vol*S.sfxVol;
-      gain.gain.setValueAtTime(0,now);
-      gain.gain.linearRampToValueAtTime(v,now+attack);
-      gain.gain.exponentialRampToValueAtTime(0.0001,now+decay);
-      osc.start(now); osc.stop(now+decay+0.02);
-    }catch(e){}
+      osc.type = type; osc.frequency.setValueAtTime(freq, now);
+      if (freqEnd !== null) osc.frequency.exponentialRampToValueAtTime(freqEnd, now + decay);
+      const v = vol * S.sfxVol;
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(v, now + attack);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + decay);
+      osc.start(now); osc.stop(now + decay + 0.02);
+    } catch(e) {}
   }
 
-  function playNoise({ vol=0.12, decay=0.08, t=null, hipass=800 }={}){
-    if(!S.sfx) return;
+  function playNoise({ vol=0.12, decay=0.08, t=null, hipass=800 } = {}) {
+    if (!S.sfx) return;
     try {
-      const ac=getAudio(), now=t??ac.currentTime;
-      const buf=ac.createBuffer(1,ac.sampleRate*decay,ac.sampleRate);
-      const data=buf.getChannelData(0);
-      for(let i=0;i<data.length;i++) data[i]=Math.random()*2-1;
-      const src=ac.createBufferSource(); src.buffer=buf;
-      const gain=ac.createGain(), filt=ac.createBiquadFilter();
-      filt.type='bandpass'; filt.frequency.value=hipass; filt.Q.value=0.8;
+      const ac = getAudio(), now = t ?? ac.currentTime;
+      const buf = ac.createBuffer(1, ac.sampleRate * decay, ac.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+      const src = ac.createBufferSource(); src.buffer = buf;
+      const gain = ac.createGain(), filt = ac.createBiquadFilter();
+      filt.type = 'bandpass'; filt.frequency.value = hipass; filt.Q.value = 0.8;
       src.connect(filt); filt.connect(gain); gain.connect(ac.destination);
-      const v=vol*S.sfxVol;
-      gain.gain.setValueAtTime(v,now); gain.gain.exponentialRampToValueAtTime(0.0001,now+decay);
-      src.start(now); src.stop(now+decay+0.01);
-    }catch(e){}
+      const v = vol * S.sfxVol;
+      gain.gain.setValueAtTime(v, now); gain.gain.exponentialRampToValueAtTime(0.0001, now + decay);
+      src.start(now); src.stop(now + decay + 0.01);
+    } catch(e) {}
   }
 
-  function playChime({ freq=880, vol=0.18, dur=0.5, t=null, shimmer=false }){
-    if(!S.sfx) return;
+  function playChime({ freq=880, vol=0.18, dur=0.5, t=null, shimmer=false }) {
+    if (!S.sfx) return;
     try {
-      const ac=getAudio(), now=t??ac.currentTime;
-      const v=vol*S.sfxVol;
-      const osc1=ac.createOscillator(), g1=ac.createGain();
-      osc1.type='sine'; osc1.frequency.value=freq;
-      g1.gain.setValueAtTime(0,now); g1.gain.linearRampToValueAtTime(v,now+0.008);
-      g1.gain.exponentialRampToValueAtTime(0.0001,now+dur);
+      const ac = getAudio(), now = t ?? ac.currentTime;
+      const v = vol * S.sfxVol;
+      const osc1 = ac.createOscillator(), g1 = ac.createGain();
+      osc1.type = 'sine'; osc1.frequency.value = freq;
+      g1.gain.setValueAtTime(0, now); g1.gain.linearRampToValueAtTime(v, now+0.008);
+      g1.gain.exponentialRampToValueAtTime(0.0001, now+dur);
       osc1.connect(g1); g1.connect(ac.destination); osc1.start(now); osc1.stop(now+dur+0.05);
 
-      const osc2=ac.createOscillator(), g2=ac.createGain();
-      osc2.type='sine'; osc2.frequency.value=freq*2;
-      g2.gain.setValueAtTime(0,now); g2.gain.linearRampToValueAtTime(v*0.35,now+0.006);
-      g2.gain.exponentialRampToValueAtTime(0.0001,now+dur*0.65);
+      const osc2 = ac.createOscillator(), g2 = ac.createGain();
+      osc2.type = 'sine'; osc2.frequency.value = freq*2;
+      g2.gain.setValueAtTime(0, now); g2.gain.linearRampToValueAtTime(v*0.35, now+0.006);
+      g2.gain.exponentialRampToValueAtTime(0.0001, now+dur*0.65);
       osc2.connect(g2); g2.connect(ac.destination); osc2.start(now); osc2.stop(now+dur+0.05);
 
-      if(shimmer){
-        const osc3=ac.createOscillator(), g3=ac.createGain();
-        osc3.type='triangle'; osc3.frequency.value=freq*1.498;
-        g3.gain.setValueAtTime(0,now+0.01); g3.gain.linearRampToValueAtTime(v*0.18,now+0.025);
-        g3.gain.exponentialRampToValueAtTime(0.0001,now+dur*0.8);
+      if (shimmer) {
+        const osc3 = ac.createOscillator(), g3 = ac.createGain();
+        osc3.type = 'triangle'; osc3.frequency.value = freq*1.498;
+        g3.gain.setValueAtTime(0, now+0.01); g3.gain.linearRampToValueAtTime(v*0.18, now+0.025);
+        g3.gain.exponentialRampToValueAtTime(0.0001, now+dur*0.8);
         osc3.connect(g3); g3.connect(ac.destination); osc3.start(now+0.01); osc3.stop(now+dur+0.05);
       }
-    }catch(e){}
+    } catch(e) {}
   }
 
-  // tiered perfect sfx
-  function sfxPerfectTier1(){ const ac=getAudio(),now=ac.currentTime; playChime({freq:1318.5,vol:0.13,dur:0.55,t:now}); playChime({freq:1046.5,vol:0.07,dur:0.40,t:now+0.015}); }
-  function sfxPerfectTier2(){
-    if(!S.sfx) return;
-    const ac=getAudio(),now=ac.currentTime;
-    const osc=ac.createOscillator(),g=ac.createGain();
-    osc.type='sine'; osc.frequency.setValueAtTime(880,now); osc.frequency.exponentialRampToValueAtTime(1108.7,now+0.12);
-    g.gain.setValueAtTime(0,now); g.gain.linearRampToValueAtTime(0.20*S.sfxVol,now+0.01); g.gain.exponentialRampToValueAtTime(0.0001,now+0.85);
+  function sfxPerfectTier1() { const ac = getAudio(), now = ac.currentTime; playChime({freq:1318.5,vol:0.13,dur:0.55,t:now}); playChime({freq:1046.5,vol:0.07,dur:0.40,t:now+0.015}); }
+  function sfxPerfectTier2() {
+    if (!S.sfx) return;
+    const ac = getAudio(), now = ac.currentTime;
+    const osc = ac.createOscillator(), g = ac.createGain();
+    osc.type = 'sine'; osc.frequency.setValueAtTime(880, now); osc.frequency.exponentialRampToValueAtTime(1108.7, now+0.12);
+    g.gain.setValueAtTime(0, now); g.gain.linearRampToValueAtTime(0.20*S.sfxVol, now+0.01); g.gain.exponentialRampToValueAtTime(0.0001, now+0.85);
     osc.connect(g); g.connect(ac.destination); osc.start(now); osc.stop(now+0.9);
     playChime({freq:1318.5,vol:0.12,dur:0.70,t:now+0.04,shimmer:true});
-    playChime({freq:659.3, vol:0.08,dur:0.50,t:now+0.06});
+    playChime({freq:659.3,vol:0.08,dur:0.50,t:now+0.06});
   }
-  function sfxPerfectTier3(streak){
-    if(!S.sfx) return;
-    const ac=getAudio(),now=ac.currentTime;
-    const extra=Math.min(streak-3,5)*0.015;
-    playChime({freq:783.99,vol:0.20+extra,dur:1.0, t:now,       shimmer:true});
-    playChime({freq:987.77,vol:0.14+extra,dur:0.85,t:now+0.02,  shimmer:true});
-    playChime({freq:1174.7,vol:0.10+extra,dur:0.75,t:now+0.04,  shimmer:true});
-    const osc=ac.createOscillator(),g=ac.createGain();
-    osc.type='sine'; osc.frequency.setValueAtTime(2637,now+0.06); osc.frequency.exponentialRampToValueAtTime(2093,now+0.25);
-    g.gain.setValueAtTime(0,now+0.06); g.gain.linearRampToValueAtTime(0.08*S.sfxVol,now+0.07); g.gain.exponentialRampToValueAtTime(0.0001,now+0.30);
+  function sfxPerfectTier3(streak) {
+    if (!S.sfx) return;
+    const ac = getAudio(), now = ac.currentTime;
+    const extra = Math.min(streak-3, 5) * 0.015;
+    playChime({freq:783.99,vol:0.20+extra,dur:1.0,t:now,shimmer:true});
+    playChime({freq:987.77,vol:0.14+extra,dur:0.85,t:now+0.02,shimmer:true});
+    playChime({freq:1174.7,vol:0.10+extra,dur:0.75,t:now+0.04,shimmer:true});
+    const osc = ac.createOscillator(), g = ac.createGain();
+    osc.type = 'sine'; osc.frequency.setValueAtTime(2637, now+0.06); osc.frequency.exponentialRampToValueAtTime(2093, now+0.25);
+    g.gain.setValueAtTime(0, now+0.06); g.gain.linearRampToValueAtTime(0.08*S.sfxVol, now+0.07); g.gain.exponentialRampToValueAtTime(0.0001, now+0.30);
     osc.connect(g); g.connect(ac.destination); osc.start(now+0.06); osc.stop(now+0.35);
     playChime({freq:392,vol:0.12,dur:0.90,t:now+0.01});
   }
-  function sfxPerfect(streak){
-    if(streak<=1) sfxPerfectTier1();
-    else if(streak===2) sfxPerfectTier2();
+  function sfxPerfect(streak) {
+    if (streak <= 1) sfxPerfectTier1();
+    else if (streak === 2) sfxPerfectTier2();
     else sfxPerfectTier3(streak);
   }
-  function sfxPlace(w){ const p=180+(w/260)*120; playNoise({vol:0.10,decay:0.06}); playTone({type:'triangle',freq:p,freqEnd:p*0.7,vol:0.10,attack:0.003,decay:0.09}); }
-  function sfxChunk(){ playTone({type:'sawtooth',freq:260,freqEnd:80,vol:0.08,attack:0.003,decay:0.14}); playNoise({vol:0.06,decay:0.05}); }
-  function sfxSpeedUp(){ const ac=getAudio(),now=ac.currentTime; [0,0.06,0.12].forEach((dt,i)=>{ playTone({type:'square',freq:320+i*120,freqEnd:360+i*120,vol:0.07,attack:0.005,decay:0.08,t:now+dt}); }); }
-  function sfxGameOver(){ const ac=getAudio(),now=ac.currentTime; playNoise({vol:0.18,decay:0.25,t:now}); [0,0.08,0.18,0.30].forEach((dt,i)=>{ playTone({type:'sawtooth',freq:400-i*70,freqEnd:200-i*30,vol:0.14-i*0.02,attack:0.005,decay:0.18,t:now+dt}); }); }
+  function sfxPlace(w) { const p = 180 + (w/260)*120; playNoise({vol:0.10,decay:0.06}); playTone({type:'triangle',freq:p,freqEnd:p*0.7,vol:0.10,attack:0.003,decay:0.09}); }
+  function sfxChunk() { playTone({type:'sawtooth',freq:260,freqEnd:80,vol:0.08,attack:0.003,decay:0.14}); playNoise({vol:0.06,decay:0.05}); }
+  function sfxSpeedUp() { const ac = getAudio(), now = ac.currentTime; [0,0.06,0.12].forEach((dt,i) => { playTone({type:'square',freq:320+i*120,freqEnd:360+i*120,vol:0.07,attack:0.005,decay:0.08,t:now+dt}); }); }
+  function sfxGameOver() { const ac = getAudio(), now = ac.currentTime; playNoise({vol:0.18,decay:0.25,t:now}); [0,0.08,0.18,0.30].forEach((dt,i) => { playTone({type:'sawtooth',freq:400-i*70,freqEnd:200-i*30,vol:0.14-i*0.02,attack:0.005,decay:0.18,t:now+dt}); }); }
 
-  // ══════════════════════════════════════════════════════════════════
-  // ── NEW MUSIC ENGINE — "Sky High" ────────────────────────────────
-  //
-  //  Graph:  drumBus ──┐
-  //          melodBus ─┼─► streakFilter ─► masterGain ─► destination
-  //          leadBus ──┘
-  //
-  //  Key: Am pentatonic — A C D E G  (Hz ladder below)
-  //  BPM: starts 95, climbs to 135 with score
-  //  Sections (each = 2 bars = 32 steps), cycling A→B→C→D→A…
-  //    A  GROOVE   : punchy kick/snare, funky bass walk, soft arp pad
-  //    B  MELODIC  : same groove + lead melody hook (the "earworm")
-  //    C  BUILDUP  : extra off-beat kicks, rising bass filter, fast arp
-  //    D  DROP     : four-on-floor kick, fat bass, lead + high synth layer
-  //
-  //  Streak mode: adds a distorted "power" layer + phaser sweep on drums
-  // ══════════════════════════════════════════════════════════════════
+  // ── MUSIC ENGINE ────────────────────────────────────────────────
+  let musicRunning = false, musicStep = 0, nextStepTime = 0;
+  let scheduleAhead = 0.12, scheduleTimer = null;
+  let masterGain = null, drumBus = null, melodBus = null, leadBus = null, streakFilter = null;
+  let sectionStep = 0, sectionIdx = 0;
+  const SECTIONS = ['groove','melodic','buildup','drop'];
+  const NORMAL_DRUM_CUTOFF = 18000, STREAK_DRUM_CUTOFF = 500;
+  const NORMAL_MELOD_GAIN = 0.60, STREAK_MELOD_GAIN = 0.85;
+  const NORMAL_MASTER_GAIN = 0.70, STREAK_MASTER_GAIN = 0.55;
 
-  let musicRunning=false, musicStep=0, musicBar=0, nextStepTime=0;
-  let scheduleAhead=0.12, scheduleTimer=null;
-  let masterGain=null, drumBus=null, melodBus=null, leadBus=null, streakFilter=null;
+  function getBPM() { return Math.min(95 + score*0.65, 135); }
+  function stepSec() { return 60/getBPM()/4; }
 
-  // ─ Section counter (each section = 32 steps = 2 bars) ─
-  let sectionStep=0;   // counts 0..31 within current section
-  let sectionIdx=0;    // 0=GROOVE 1=MELODIC 2=BUILDUP 3=DROP
-
-  const SECTIONS=['groove','melodic','buildup','drop'];
-
-  const NORMAL_DRUM_CUTOFF = 18000;
-  const STREAK_DRUM_CUTOFF = 500;
-  const NORMAL_MELOD_GAIN  = 0.60;
-  const STREAK_MELOD_GAIN  = 0.85;
-  const NORMAL_MASTER_GAIN = 0.70;
-  const STREAK_MASTER_GAIN = 0.55;
-
-  // ─ BPM: 95 → 135 ─
-  function getBPM(){ return Math.min(95 + score*0.65, 135); }
-  function stepSec(){ return 60/getBPM()/4; }   // 16th-note duration
-
-  // ─ Note table (Hz) — Am pentatonic + octaves ─
-  const N={
-    // bass register
-    A2:110, C3:130.8, D3:146.8, E3:164.8, G3:196,
-    // mid register
-    A3:220, C4:261.6, D4:293.7, E4:329.6, G4:392,
-    // high register
-    A4:440, C5:523.2, D5:587.3, E5:659.2, G5:784, A5:880,
+  const N = {
+    A2:110,C3:130.8,D3:146.8,E3:164.8,G3:196,
+    A3:220,C4:261.6,D4:293.7,E4:329.6,G4:392,
+    A4:440,C5:523.2,D5:587.3,E5:659.2,G5:784,A5:880,
   };
 
-  // ════════════════════════════════════════════
-  // GRAPH BUILDER
-  // ════════════════════════════════════════════
-  function buildMusicGraph(){
-    if(masterGain) return;
-    const ac=getAudio();
-
-    masterGain=ac.createGain(); masterGain.gain.value=0; masterGain.connect(ac.destination);
-
-    streakFilter=ac.createBiquadFilter();
-    streakFilter.type='lowpass'; streakFilter.frequency.value=NORMAL_DRUM_CUTOFF; streakFilter.Q.value=0.5;
+  function buildMusicGraph() {
+    if (masterGain) return;
+    const ac = getAudio();
+    masterGain = ac.createGain(); masterGain.gain.value = 0; masterGain.connect(ac.destination);
+    streakFilter = ac.createBiquadFilter();
+    streakFilter.type = 'lowpass'; streakFilter.frequency.value = NORMAL_DRUM_CUTOFF; streakFilter.Q.value = 0.5;
     streakFilter.connect(masterGain);
-
-    drumBus=ac.createGain();  drumBus.gain.value=1.0;  drumBus.connect(streakFilter);
-    melodBus=ac.createGain(); melodBus.gain.value=NORMAL_MELOD_GAIN; melodBus.connect(masterGain);
-    leadBus=ac.createGain();  leadBus.gain.value=0;    leadBus.connect(masterGain); // muted until section B
+    drumBus  = ac.createGain(); drumBus.gain.value = 1.0;              drumBus.connect(streakFilter);
+    melodBus = ac.createGain(); melodBus.gain.value = NORMAL_MELOD_GAIN; melodBus.connect(masterGain);
+    leadBus  = ac.createGain(); leadBus.gain.value = 0;                leadBus.connect(masterGain);
   }
 
-  function applyMusicStreakMode(active){
-    if(!audioCtx||!streakFilter) return;
-    const ac=audioCtx, now=ac.currentTime, ramp=0.45;
-    const tCutoff = active?STREAK_DRUM_CUTOFF:NORMAL_DRUM_CUTOFF;
-    const tMelod  = active?STREAK_MELOD_GAIN:NORMAL_MELOD_GAIN;
-    const tMaster = active?STREAK_MASTER_GAIN:NORMAL_MASTER_GAIN;
+  function applyMusicStreakMode(active) {
+    if (!audioCtx || !streakFilter) return;
+    const ac = audioCtx, now = ac.currentTime, ramp = 0.45;
+    const tCutoff = active ? STREAK_DRUM_CUTOFF : NORMAL_DRUM_CUTOFF;
+    const tMelod  = active ? STREAK_MELOD_GAIN  : NORMAL_MELOD_GAIN;
+    const tMaster = active ? STREAK_MASTER_GAIN : NORMAL_MASTER_GAIN;
     streakFilter.frequency.cancelScheduledValues(now);
-    streakFilter.frequency.setValueAtTime(streakFilter.frequency.value,now);
-    streakFilter.frequency.exponentialRampToValueAtTime(tCutoff,now+ramp);
+    streakFilter.frequency.setValueAtTime(streakFilter.frequency.value, now);
+    streakFilter.frequency.exponentialRampToValueAtTime(tCutoff, now+ramp);
     melodBus.gain.cancelScheduledValues(now);
-    melodBus.gain.setValueAtTime(melodBus.gain.value,now);
-    melodBus.gain.linearRampToValueAtTime(tMelod,now+ramp);
+    melodBus.gain.setValueAtTime(melodBus.gain.value, now);
+    melodBus.gain.linearRampToValueAtTime(tMelod, now+ramp);
     masterGain.gain.cancelScheduledValues(now);
-    masterGain.gain.setValueAtTime(masterGain.gain.value,now);
-    masterGain.gain.linearRampToValueAtTime(tMaster*S.musicVol,now+ramp);
+    masterGain.gain.setValueAtTime(masterGain.gain.value, now);
+    masterGain.gain.linearRampToValueAtTime(tMaster * S.musicVol, now+ramp);
   }
 
-  // ════════════════════════════════════════════
-  // DRUM VOICES
-  // ════════════════════════════════════════════
-  function drumKick(t, vol=0.95){
-    try{
-      const ac=getAudio(),db=drumBus;
-      // sub body
-      const o=ac.createOscillator(),g=ac.createGain();
-      o.type='sine'; o.frequency.setValueAtTime(180,t); o.frequency.exponentialRampToValueAtTime(38,t+0.22);
-      g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.30);
+  // Drum voices
+  function drumKick(t, vol=0.95) {
+    try {
+      const ac = getAudio(), db = drumBus;
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.type = 'sine'; o.frequency.setValueAtTime(180, t); o.frequency.exponentialRampToValueAtTime(38, t+0.22);
+      g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.30);
       o.connect(g); g.connect(db); o.start(t); o.stop(t+0.32);
-      // click transient
-      const o2=ac.createOscillator(),g2=ac.createGain();
-      o2.type='triangle'; o2.frequency.value=120;
-      g2.gain.setValueAtTime(vol*0.4,t); g2.gain.exponentialRampToValueAtTime(0.001,t+0.025);
+      const o2 = ac.createOscillator(), g2 = ac.createGain();
+      o2.type = 'triangle'; o2.frequency.value = 120;
+      g2.gain.setValueAtTime(vol*0.4, t); g2.gain.exponentialRampToValueAtTime(0.001, t+0.025);
       o2.connect(g2); g2.connect(db); o2.start(t); o2.stop(t+0.03);
-    }catch(e){}
+    } catch(e) {}
   }
-
-  function drumSnare(t, vol=0.55){
-    try{
-      const ac=getAudio(),db=drumBus;
-      // tone
-      const o=ac.createOscillator(),og=ac.createGain();
-      o.type='triangle'; o.frequency.value=220;
-      og.gain.setValueAtTime(vol*0.7,t); og.gain.exponentialRampToValueAtTime(0.001,t+0.12);
+  function drumSnare(t, vol=0.55) {
+    try {
+      const ac = getAudio(), db = drumBus;
+      const o = ac.createOscillator(), og = ac.createGain();
+      o.type = 'triangle'; o.frequency.value = 220;
+      og.gain.setValueAtTime(vol*0.7, t); og.gain.exponentialRampToValueAtTime(0.001, t+0.12);
       o.connect(og); og.connect(db); o.start(t); o.stop(t+0.13);
-      // noise body
-      const bLen=Math.floor(ac.sampleRate*0.20);
-      const buf=ac.createBuffer(1,bLen,ac.sampleRate),data=buf.getChannelData(0);
-      for(let i=0;i<bLen;i++) data[i]=Math.random()*2-1;
-      const src=ac.createBufferSource(); src.buffer=buf;
-      const filt=ac.createBiquadFilter(); filt.type='bandpass'; filt.frequency.value=2500; filt.Q.value=0.6;
-      const ng=ac.createGain();
-      ng.gain.setValueAtTime(vol*0.85,t); ng.gain.exponentialRampToValueAtTime(0.001,t+0.20);
+      const bLen = Math.floor(ac.sampleRate * 0.20);
+      const buf = ac.createBuffer(1, bLen, ac.sampleRate), data = buf.getChannelData(0);
+      for (let i = 0; i < bLen; i++) data[i] = Math.random()*2-1;
+      const src = ac.createBufferSource(); src.buffer = buf;
+      const filt = ac.createBiquadFilter(); filt.type = 'bandpass'; filt.frequency.value = 2500; filt.Q.value = 0.6;
+      const ng = ac.createGain();
+      ng.gain.setValueAtTime(vol*0.85, t); ng.gain.exponentialRampToValueAtTime(0.001, t+0.20);
       src.connect(filt); filt.connect(ng); ng.connect(db); src.start(t); src.stop(t+0.21);
-    }catch(e){}
+    } catch(e) {}
   }
-
-  function drumRim(t){ // rimshot — for syncopation
-    try{
-      const ac=getAudio(),db=drumBus;
-      const o=ac.createOscillator(),g=ac.createGain();
-      o.type='square'; o.frequency.value=900;
-      g.gain.setValueAtTime(0.18,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.04);
+  function drumRim(t) {
+    try {
+      const ac = getAudio(), db = drumBus;
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.type = 'square'; o.frequency.value = 900;
+      g.gain.setValueAtTime(0.18, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.04);
       o.connect(g); g.connect(db); o.start(t); o.stop(t+0.05);
-    }catch(e){}
+    } catch(e) {}
   }
-
-  function drumHat(t, open=false, vol=0.14){
-    try{
-      const ac=getAudio(),db=drumBus;
-      const dur=open?0.18:0.042;
-      const bLen=Math.floor(ac.sampleRate*dur);
-      const buf=ac.createBuffer(1,bLen,ac.sampleRate),data=buf.getChannelData(0);
-      for(let i=0;i<bLen;i++) data[i]=Math.random()*2-1;
-      const src=ac.createBufferSource(); src.buffer=buf;
-      const filt=ac.createBiquadFilter(); filt.type='highpass'; filt.frequency.value=open?7000:9500;
-      const g=ac.createGain();
-      g.gain.setValueAtTime(vol*(open?1.4:1),t); g.gain.exponentialRampToValueAtTime(0.001,t+dur);
+  function drumHat(t, open=false, vol=0.14) {
+    try {
+      const ac = getAudio(), db = drumBus;
+      const dur = open ? 0.18 : 0.042;
+      const bLen = Math.floor(ac.sampleRate * dur);
+      const buf = ac.createBuffer(1, bLen, ac.sampleRate), data = buf.getChannelData(0);
+      for (let i = 0; i < bLen; i++) data[i] = Math.random()*2-1;
+      const src = ac.createBufferSource(); src.buffer = buf;
+      const filt = ac.createBiquadFilter(); filt.type = 'highpass'; filt.frequency.value = open ? 7000 : 9500;
+      const g = ac.createGain();
+      g.gain.setValueAtTime(vol*(open?1.4:1), t); g.gain.exponentialRampToValueAtTime(0.001, t+dur);
       src.connect(filt); filt.connect(g); g.connect(db); src.start(t); src.stop(t+dur+0.01);
-    }catch(e){}
+    } catch(e) {}
   }
-
-  function drumClap(t){ // layered clap — section D accent
-    try{
-      const ac=getAudio(),db=drumBus;
-      [0,0.008,0.016].forEach(dt=>{
-        const bLen=Math.floor(ac.sampleRate*0.14);
-        const buf=ac.createBuffer(1,bLen,ac.sampleRate),data=buf.getChannelData(0);
-        for(let i=0;i<bLen;i++) data[i]=Math.random()*2-1;
-        const src=ac.createBufferSource(); src.buffer=buf;
-        const filt=ac.createBiquadFilter(); filt.type='bandpass'; filt.frequency.value=1800; filt.Q.value=0.5;
-        const g=ac.createGain();
-        g.gain.setValueAtTime(0.5,t+dt); g.gain.exponentialRampToValueAtTime(0.001,t+dt+0.14);
+  function drumClap(t) {
+    try {
+      const ac = getAudio(), db = drumBus;
+      [0,0.008,0.016].forEach(dt => {
+        const bLen = Math.floor(ac.sampleRate * 0.14);
+        const buf = ac.createBuffer(1, bLen, ac.sampleRate), data = buf.getChannelData(0);
+        for (let i = 0; i < bLen; i++) data[i] = Math.random()*2-1;
+        const src = ac.createBufferSource(); src.buffer = buf;
+        const filt = ac.createBiquadFilter(); filt.type = 'bandpass'; filt.frequency.value = 1800; filt.Q.value = 0.5;
+        const g = ac.createGain();
+        g.gain.setValueAtTime(0.5, t+dt); g.gain.exponentialRampToValueAtTime(0.001, t+dt+0.14);
         src.connect(filt); filt.connect(g); g.connect(db); src.start(t+dt); src.stop(t+dt+0.15);
       });
-    }catch(e){}
+    } catch(e) {}
   }
 
-  // ════════════════════════════════════════════
-  // MELODIC VOICES
-  // ════════════════════════════════════════════
-
-  // Plucked bass — punchy, slightly overdriven
-  function mBass(t, freq, dur=0.18, vol=0.55){
-    try{
-      const ac=getAudio(),mb=melodBus;
-      const o=ac.createOscillator(),filt=ac.createBiquadFilter(),g=ac.createGain();
-      o.type='sawtooth'; o.frequency.value=freq;
-      filt.type='lowpass';
-      filt.frequency.setValueAtTime(1200,t); filt.frequency.exponentialRampToValueAtTime(200,t+dur*0.6);
-      filt.Q.value=5;
-      g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(0.001,t+dur);
+  // Melodic voices
+  function mBass(t, freq, dur=0.18, vol=0.55) {
+    try {
+      const ac = getAudio(), mb = melodBus;
+      const o = ac.createOscillator(), filt = ac.createBiquadFilter(), g = ac.createGain();
+      o.type = 'sawtooth'; o.frequency.value = freq;
+      filt.type = 'lowpass';
+      filt.frequency.setValueAtTime(1200, t); filt.frequency.exponentialRampToValueAtTime(200, t+dur*0.6);
+      filt.Q.value = 5;
+      g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.001, t+dur);
       o.connect(filt); filt.connect(g); g.connect(mb); o.start(t); o.stop(t+dur+0.01);
-    }catch(e){}
+    } catch(e) {}
   }
-
-  // Soft pad chord — panned, gentle
-  function mPad(t, freq, dur=0.38, vol=0.08){
-    try{
-      const ac=getAudio(),mb=melodBus;
-      [1, 1.498, 1.782].forEach((ratio,i)=>{ // root, fifth, ~major7
-        const o=ac.createOscillator(),g=ac.createGain();
-        o.type='sine'; o.frequency.value=freq*ratio;
-        g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vol*(1-i*0.25),t+0.03);
-        g.gain.setValueAtTime(vol*(1-i*0.25),t+dur-0.05); g.gain.linearRampToValueAtTime(0,t+dur);
+  function mPad(t, freq, dur=0.38, vol=0.08) {
+    try {
+      const ac = getAudio(), mb = melodBus;
+      [1, 1.498, 1.782].forEach((ratio, i) => {
+        const o = ac.createOscillator(), g = ac.createGain();
+        o.type = 'sine'; o.frequency.value = freq * ratio;
+        g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol*(1-i*0.25), t+0.03);
+        g.gain.setValueAtTime(vol*(1-i*0.25), t+dur-0.05); g.gain.linearRampToValueAtTime(0, t+dur);
         o.connect(g); g.connect(mb); o.start(t); o.stop(t+dur+0.02);
       });
-    }catch(e){}
+    } catch(e) {}
   }
-
-  // Chiptune arp — the catchy hook cell (8th-note steps)
-  function mArp(t, freq, vol=0.10){
-    try{
-      const ac=getAudio(),mb=melodBus;
-      const o=ac.createOscillator(),g=ac.createGain();
-      o.type='square'; o.frequency.value=freq;
-      g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vol,t+0.005);
-      g.gain.exponentialRampToValueAtTime(0.001,t+0.11);
+  function mArp(t, freq, vol=0.10) {
+    try {
+      const ac = getAudio(), mb = melodBus;
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.type = 'square'; o.frequency.value = freq;
+      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t+0.005);
+      g.gain.exponentialRampToValueAtTime(0.001, t+0.11);
       o.connect(g); g.connect(mb); o.start(t); o.stop(t+0.12);
-    }catch(e){}
+    } catch(e) {}
   }
-
-  // Synth lead — the "earworm" melody, triangle + subtle vibrato
-  function mLead(t, freq, dur=0.20, vol=0.18){
-    try{
-      const ac=getAudio(),lb=leadBus;
-      const o=ac.createOscillator(),g=ac.createGain();
-      o.type='triangle'; o.frequency.setValueAtTime(freq,t);
-      // micro vibrato
-      const lfo=ac.createOscillator(),lfog=ac.createGain();
-      lfo.type='sine'; lfo.frequency.value=5.5;
-      lfog.gain.value=freq*0.012;
+  function mLead(t, freq, dur=0.20, vol=0.18) {
+    try {
+      const ac = getAudio(), lb = leadBus;
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.type = 'triangle'; o.frequency.setValueAtTime(freq, t);
+      const lfo = ac.createOscillator(), lfog = ac.createGain();
+      lfo.type = 'sine'; lfo.frequency.value = 5.5;
+      lfog.gain.value = freq * 0.012;
       lfo.connect(lfog); lfog.connect(o.frequency); lfo.start(t); lfo.stop(t+dur+0.02);
-      g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vol,t+0.012);
-      g.gain.setValueAtTime(vol,t+dur-0.06); g.gain.exponentialRampToValueAtTime(0.001,t+dur+0.02);
+      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t+0.012);
+      g.gain.setValueAtTime(vol, t+dur-0.06); g.gain.exponentialRampToValueAtTime(0.001, t+dur+0.02);
       o.connect(g); g.connect(lb); o.start(t); o.stop(t+dur+0.04);
-    }catch(e){}
+    } catch(e) {}
   }
-
-  // High synth sparkle — section D "drop" layer
-  function mSpark(t, freq, vol=0.07){
-    try{
-      const ac=getAudio(),lb=leadBus;
-      const o=ac.createOscillator(),g=ac.createGain();
-      o.type='sine'; o.frequency.value=freq;
-      g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vol,t+0.006);
-      g.gain.exponentialRampToValueAtTime(0.001,t+0.09);
+  function mSpark(t, freq, vol=0.07) {
+    try {
+      const ac = getAudio(), lb = leadBus;
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.type = 'sine'; o.frequency.value = freq;
+      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t+0.006);
+      g.gain.exponentialRampToValueAtTime(0.001, t+0.09);
       o.connect(g); g.connect(lb); o.start(t); o.stop(t+0.10);
-    }catch(e){}
+    } catch(e) {}
   }
 
-  // ════════════════════════════════════════════
-  // PATTERNS  (32 steps = 2 bars of 16th notes)
-  // ════════════════════════════════════════════
+  // Patterns
+  const GA_KICK  = [1,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0, 1,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0];
+  const GA_SNARE = [0,0,0,0,1,0,0,0,0,0,0,0,1,0,1,0, 0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0];
+  const GA_HAT   = [1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,1, 1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,1];
+  const GA_OPEN  = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0];
+  const GA_RIM   = [0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0];
+  const GA_BASS  = [N.A2,null,null,N.A2,null,null,N.C3,null,null,N.D3,null,null,N.E3,null,null,null, N.A2,null,null,N.G3,null,null,N.E3,null,N.D3,null,null,N.A2,null,null,null,null];
+  const GA_PAD   = [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+  const GA_PAD_F = [N.A3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, N.E3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+  const HK = [N.A4,N.C5,N.D5,N.E5,N.G5,N.E5,N.D5,N.C5, N.A4,N.C5,N.D5,N.E5,N.A5,N.G5,N.E5,N.D5];
+  const GB_LEAD  = [1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0, 1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0];
+  const GB_ARP_F = [N.A4,null,N.E4,null,N.A4,null,N.G4,null,N.D4,null,N.E4,null,N.G4,null,N.A4,null, N.C5,null,N.A4,null,N.G4,null,N.E4,null,N.D4,null,N.C4,null,N.A3,null,N.C4,null];
+  const GC_KICK  = [1,0,0,0,1,0,0,1,1,0,0,0,1,0,1,0, 1,0,0,0,1,0,0,1,1,0,1,0,1,0,1,1];
+  const GC_HAT   = [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1];
+  const GC_BASS  = [N.A2,null,N.A2,null,N.C3,null,N.C3,null,N.E3,null,N.E3,null,N.G3,null,N.G3,null, N.A3,null,N.A3,null,N.C4,null,N.C4,null,N.E4,null,N.E4,null,N.G4,null,N.G4,null];
+  const GC_ARP_F = [N.A3,N.C4,N.D4,N.E4,N.G4,N.A4,N.C5,N.D5,N.E5,N.G5,N.A5,N.G5,N.E5,N.D5,N.C5,N.A4, N.G4,N.A4,N.C5,N.E5,N.G5,N.A5,N.G5,N.E5,N.D5,N.E5,N.G5,N.A5,N.G5,N.E5,N.D5,N.C5];
+  const GD_KICK  = [1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0, 1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,1];
+  const GD_CLAP  = [0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0, 0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0];
+  const GD_HAT   = [1,1,0,1,0,1,1,0,1,1,0,1,0,1,1,0, 1,1,0,1,0,1,1,0,1,1,0,1,0,1,0,1];
+  const GD_BASS  = [N.A2,null,N.A2,N.A2,null,N.C3,null,N.D3,N.E3,null,null,N.D3,N.C3,null,N.A2,null, N.G2,null,N.G2,N.G2,null,N.A2,null,N.C3,N.D3,null,N.E3,null,N.A2,null,N.G2,null];
+  const GD_SPARK = [1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0, 1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0];
+  const GD_SFRQ  = [N.A5,0,N.C5,0,N.E5,0,N.G5,0,N.A5,0,N.G5,0,N.E5,0,N.C5,0, N.A4,0,N.C5,0,N.E5,0,N.A5,0,N.G5,0,N.E5,0,N.D5,0,N.C5,0,N.A4,0];
 
-  // ── GROOVE (section A) ──────────────────────────────────────────
-  // Kick: 1 . . . . . . . 1 . . . 1 . . .  (four-ish with ghost)
-  // Snare: on 2 and 4 (steps 4,12), ghost at 14
-  // Hats: 8th note pairs, open on &4
-  // Bass: funky walking line in Am
-  const GA_KICK  =[1,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0, 1,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0];
-  const GA_SNARE =[0,0,0,0,1,0,0,0,0,0,0,0,1,0,1,0, 0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0];
-  const GA_HAT   =[1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,1, 1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,1];
-  const GA_OPEN  =[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0];
-  const GA_RIM   =[0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0];
-  // Bass notes (null = rest)
-  const GA_BASS  =[N.A2,null,null,N.A2,null,null,N.C3,null,null,N.D3,null,null,N.E3,null,null,null,
-                   N.A2,null,null,N.G3,null,null,N.E3,null,N.D3,null,null,N.A2,null,null,null,null];
-  // Arp pad (root-chord pulse every 4 steps)
-  const GA_PAD   =[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-  const GA_PAD_F =[N.A3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, N.E3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-
-  // ── MELODIC (section B) — same groove + lead hook ───────────────
-  // THE HOOK: A C D E G E D C  /  A C D E A G E D  (Am ascending+descend)
-  const HK=[N.A4,N.C5,N.D5,N.E5,N.G5,N.E5,N.D5,N.C5,
-            N.A4,N.C5,N.D5,N.E5,N.A5,N.G5,N.E5,N.D5];
-  const GB_LEAD  =[1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0, 1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0];
-  // arp: every 2 steps, upper octave arpeggio
-  const GB_ARP_F =[N.A4,null,N.E4,null,N.A4,null,N.G4,null,N.D4,null,N.E4,null,N.G4,null,N.A4,null,
-                   N.C5,null,N.A4,null,N.G4,null,N.E4,null,N.D4,null,N.C4,null,N.A3,null,N.C4,null];
-
-  // ── BUILDUP (section C) — tension rising ────────────────────────
-  // Extra kick offbeats, faster hats, filter sweep upward on bass
-  const GC_KICK  =[1,0,0,0,1,0,0,1,1,0,0,0,1,0,1,0, 1,0,0,0,1,0,0,1,1,0,1,0,1,0,1,1];
-  const GC_HAT   =[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]; // 16th hats!
-  const GC_BASS  =[N.A2,null,N.A2,null,N.C3,null,N.C3,null,N.E3,null,N.E3,null,N.G3,null,N.G3,null,
-                   N.A3,null,N.A3,null,N.C4,null,N.C4,null,N.E4,null,N.E4,null,N.G4,null,N.G4,null];
-  // Rising arp — excitement
-  const GC_ARP_F =[N.A3,N.C4,N.D4,N.E4,N.G4,N.A4,N.C5,N.D5,N.E5,N.G5,N.A5,N.G5,N.E5,N.D5,N.C5,N.A4,
-                   N.G4,N.A4,N.C5,N.E5,N.G5,N.A5,N.G5,N.E5,N.D5,N.E5,N.G5,N.A5,N.G5,N.E5,N.D5,N.C5];
-
-  // ── DROP (section D) — maximum energy ───────────────────────────
-  // Four-on-floor kick, clap on 2&4, rolling hats, thick bass, spark lead
-  const GD_KICK  =[1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0, 1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,1];
-  const GD_CLAP  =[0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0, 0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0];
-  const GD_HAT   =[1,1,0,1,0,1,1,0,1,1,0,1,0,1,1,0, 1,1,0,1,0,1,1,0,1,1,0,1,0,1,0,1];
-  const GD_BASS  =[N.A2,null,N.A2,N.A2,null,N.C3,null,N.D3,N.E3,null,null,N.D3,N.C3,null,N.A2,null,
-                   N.G2,null,N.G2,N.G2,null,N.A2,null,N.C3,N.D3,null,N.E3,null,N.A2,null,N.G2,null];
-  // Spark melody — high octave hook
-  const GD_SPARK =[1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0, 1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0];
-  const GD_SFRQ  =[N.A5,0,N.C5,0,N.E5,0,N.G5,0,N.A5,0,N.G5,0,N.E5,0,N.C5,0,
-                   N.A4,0,N.C5,0,N.E5,0,N.A5,0,N.G5,0,N.E5,0,N.D5,0,N.C5,0,N.A4,0];
-
-  // ════════════════════════════════════════════
-  // SECTION-AWARE SCHEDULER
-  // ════════════════════════════════════════════
-  function scheduleStep(t, ss, secName){
-    const s=ss; // alias
-
-    if(secName==='groove'){
-      if(GA_KICK[s])  drumKick(t, 0.92);
-      if(GA_SNARE[s]) drumSnare(t, GA_SNARE[s]===1?0.55:0.28);
-      if(GA_RIM[s])   drumRim(t);
-      if(GA_OPEN[s])  drumHat(t,true,0.18); else if(GA_HAT[s]) drumHat(t,false,0.13);
-      if(GA_BASS[s])  mBass(t, GA_BASS[s], 0.19);
-      if(GA_PAD[s])   mPad(t, GA_PAD_F[s], 0.38, 0.06);
-      mArp(t, N.A4*(1 + (s%8)*0.03)*0, 0); // no arp in groove (quiet)
-    }
-
-    else if(secName==='melodic'){
-      // reuse groove drums
-      if(GA_KICK[s])  drumKick(t,0.92);
-      if(GA_SNARE[s]) drumSnare(t,0.55);
-      if(GA_RIM[s])   drumRim(t);
-      if(GA_OPEN[s])  drumHat(t,true,0.18); else if(GA_HAT[s]) drumHat(t,false,0.13);
-      if(GA_BASS[s])  mBass(t,GA_BASS[s],0.19);
-      // lead hook every 2 steps
-      if(GB_LEAD[s]){ const hi=Math.floor(s/2)%16; mLead(t,HK[hi],0.18,0.16); }
-      // upper arp
-      if(GB_ARP_F[s]) mArp(t,GB_ARP_F[s],0.09);
-    }
-
-    else if(secName==='buildup'){
-      if(GC_KICK[s])  drumKick(t, s>23?1.0:0.85);
-      if(GA_SNARE[s]) drumSnare(t,0.50);
-      if(GC_HAT[s])   drumHat(t,false,s>16?0.16:0.10); // hats get louder
-      if(GC_BASS[s])  mBass(t,GC_BASS[s],0.12,0.45+s*0.004); // filter opens
-      if(GC_ARP_F[s]) mArp(t,GC_ARP_F[s],0.10+s*0.002);
-    }
-
-    else if(secName==='drop'){
-      if(GD_KICK[s])  drumKick(t,1.0);
-      if(GD_CLAP[s])  drumClap(t);
-      if(GD_HAT[s])   drumHat(t,false,0.16);
-      if(s===14||s===30) drumHat(t,true,0.22); // open hat accent
-      if(GD_BASS[s])  mBass(t,GD_BASS[s],0.17,0.65);
-      if(GD_SPARK[s]&&GD_SFRQ[s]) mSpark(t,GD_SFRQ[s],0.09);
-      // lead hook too (octave lower in drop)
-      if(GB_LEAD[s]){ const hi=Math.floor(s/2)%16; mLead(t,HK[hi]*0.5,0.18,0.14); }
+  function scheduleStep(t, ss, secName) {
+    const s = ss;
+    if (secName === 'groove') {
+      if (GA_KICK[s])  drumKick(t, 0.92);
+      if (GA_SNARE[s]) drumSnare(t, GA_SNARE[s]===1?0.55:0.28);
+      if (GA_RIM[s])   drumRim(t);
+      if (GA_OPEN[s])  drumHat(t, true, 0.18); else if (GA_HAT[s]) drumHat(t, false, 0.13);
+      if (GA_BASS[s])  mBass(t, GA_BASS[s], 0.19);
+      if (GA_PAD[s])   mPad(t, GA_PAD_F[s], 0.38, 0.06);
+    } else if (secName === 'melodic') {
+      if (GA_KICK[s])  drumKick(t, 0.92);
+      if (GA_SNARE[s]) drumSnare(t, 0.55);
+      if (GA_RIM[s])   drumRim(t);
+      if (GA_OPEN[s])  drumHat(t, true, 0.18); else if (GA_HAT[s]) drumHat(t, false, 0.13);
+      if (GA_BASS[s])  mBass(t, GA_BASS[s], 0.19);
+      if (GB_LEAD[s])  { const hi = Math.floor(s/2)%16; mLead(t, HK[hi], 0.18, 0.16); }
+      if (GB_ARP_F[s]) mArp(t, GB_ARP_F[s], 0.09);
+    } else if (secName === 'buildup') {
+      if (GC_KICK[s])  drumKick(t, s>23?1.0:0.85);
+      if (GA_SNARE[s]) drumSnare(t, 0.50);
+      if (GC_HAT[s])   drumHat(t, false, s>16?0.16:0.10);
+      if (GC_BASS[s])  mBass(t, GC_BASS[s], 0.12, 0.45+s*0.004);
+      if (GC_ARP_F[s]) mArp(t, GC_ARP_F[s], 0.10+s*0.002);
+    } else if (secName === 'drop') {
+      if (GD_KICK[s])  drumKick(t, 1.0);
+      if (GD_CLAP[s])  drumClap(t);
+      if (GD_HAT[s])   drumHat(t, false, 0.16);
+      if (s===14||s===30) drumHat(t, true, 0.22);
+      if (GD_BASS[s])  mBass(t, GD_BASS[s], 0.17, 0.65);
+      if (GD_SPARK[s] && GD_SFRQ[s]) mSpark(t, GD_SFRQ[s], 0.09);
+      if (GB_LEAD[s])  { const hi = Math.floor(s/2)%16; mLead(t, HK[hi]*0.5, 0.18, 0.14); }
     }
   }
 
-  function schedulerTick(){
-    if(!musicRunning) return;
-    const ac=getAudio();
-    while(nextStepTime < ac.currentTime+scheduleAhead){
-      const secName=SECTIONS[sectionIdx%4];
+  function schedulerTick() {
+    if (!musicRunning) return;
+    const ac = getAudio();
+    while (nextStepTime < ac.currentTime + scheduleAhead) {
+      const secName = SECTIONS[sectionIdx % 4];
       scheduleStep(nextStepTime, sectionStep, secName);
-
-      sectionStep++;
-      musicStep++;
-      // advance section every 32 steps
-      if(sectionStep>=32){
-        sectionStep=0;
-        sectionIdx++;
-        // update lead bus gain: silent in groove, active from melodic onward
-        const nextSec=SECTIONS[sectionIdx%4];
-        if(leadBus){
-          const tgt=(nextSec==='groove')?0:(nextSec==='melodic')?0.7:(nextSec==='buildup')?0.5:0.85;
+      sectionStep++; musicStep++;
+      if (sectionStep >= 32) {
+        sectionStep = 0; sectionIdx++;
+        const nextSec = SECTIONS[sectionIdx % 4];
+        if (leadBus) {
+          const tgt = (nextSec==='groove')?0:(nextSec==='melodic')?0.7:(nextSec==='buildup')?0.5:0.85;
           leadBus.gain.cancelScheduledValues(nextStepTime);
-          leadBus.gain.linearRampToValueAtTime(tgt,nextStepTime+0.3);
+          leadBus.gain.linearRampToValueAtTime(tgt, nextStepTime+0.3);
         }
       }
-      nextStepTime+=stepSec();
+      nextStepTime += stepSec();
     }
-    scheduleTimer=setTimeout(schedulerTick,20);
+    scheduleTimer = setTimeout(schedulerTick, 20);
   }
 
-  function musicStart(){
-    if(musicRunning||!S.music) return;
+  function musicStart() {
+    if (musicRunning || !S.music) return;
     buildMusicGraph();
-    const ac=getAudio();
-    musicRunning=true; musicStep=0; sectionStep=0; sectionIdx=0;
-    nextStepTime=ac.currentTime+0.05;
+    const ac = getAudio();
+    musicRunning = true; musicStep = 0; sectionStep = 0; sectionIdx = 0;
+    nextStepTime = ac.currentTime + 0.05;
     masterGain.gain.cancelScheduledValues(ac.currentTime);
-    masterGain.gain.setValueAtTime(masterGain.gain.value,ac.currentTime);
-    masterGain.gain.linearRampToValueAtTime(NORMAL_MASTER_GAIN*S.musicVol,ac.currentTime+0.8);
-    streakFilter.frequency.setValueAtTime(NORMAL_DRUM_CUTOFF,ac.currentTime);
-    melodBus.gain.setValueAtTime(NORMAL_MELOD_GAIN,ac.currentTime);
-    leadBus.gain.setValueAtTime(0,ac.currentTime); // groove starts silent lead
+    masterGain.gain.setValueAtTime(masterGain.gain.value, ac.currentTime);
+    masterGain.gain.linearRampToValueAtTime(NORMAL_MASTER_GAIN * S.musicVol, ac.currentTime+0.8);
+    streakFilter.frequency.setValueAtTime(NORMAL_DRUM_CUTOFF, ac.currentTime);
+    melodBus.gain.setValueAtTime(NORMAL_MELOD_GAIN, ac.currentTime);
+    leadBus.gain.setValueAtTime(0, ac.currentTime);
     schedulerTick();
   }
 
-  function musicStop(){
-    musicRunning=false; clearTimeout(scheduleTimer);
-    if(!audioCtx||!masterGain) return;
-    const ac=audioCtx;
+  function musicStop() {
+    musicRunning = false; clearTimeout(scheduleTimer);
+    if (!audioCtx || !masterGain) return;
+    const ac = audioCtx;
     masterGain.gain.cancelScheduledValues(ac.currentTime);
-    masterGain.gain.setValueAtTime(masterGain.gain.value,ac.currentTime);
-    masterGain.gain.linearRampToValueAtTime(0,ac.currentTime+0.45);
+    masterGain.gain.setValueAtTime(masterGain.gain.value, ac.currentTime);
+    masterGain.gain.linearRampToValueAtTime(0, ac.currentTime+0.45);
   }
 
-  // ── SCREEN SHAKE ─────────────────────────────────────────────────
-  function triggerShake(mag){ if(S.shake) screenShake.mag=mag; }
-  function updateShake(){
-    if(screenShake.mag<0.1){ screenShake.x=0; screenShake.y=0; return; }
-    screenShake.x=(Math.random()-0.5)*screenShake.mag;
-    screenShake.y=(Math.random()-0.5)*screenShake.mag;
-    screenShake.mag*=screenShake.decay;
+  // ── SCREEN SHAKE ────────────────────────────────────────────────
+  const SHAKE_DECAY = 0.82; // faster decay = less lingering
+  function triggerShake(mag) { if (S.shake) screenShake.mag = Math.min(mag, 8); }
+  function updateShake() {
+    if (screenShake.mag < 0.15) { screenShake.x = 0; screenShake.y = 0; screenShake.mag = 0; return; }
+    screenShake.x = (Math.random()-0.5) * screenShake.mag;
+    screenShake.y = (Math.random()-0.5) * screenShake.mag;
+    screenShake.mag *= SHAKE_DECAY;
   }
 
-  // ── CAMERA ───────────────────────────────────────────────────────
-  let cameraEaseT=0,cameraEaseFrom=0,cameraEaseTo=0,cameraEasing=false;
-  function startCameraEase(to){ cameraEaseFrom=cameraY; cameraEaseTo=to; cameraEaseT=0; cameraEasing=true; }
-  function updateCamera(){
-    if(cameraEasing){
-      cameraEaseT=Math.min(1,cameraEaseT+0.04);
-      cameraY=lerp(cameraEaseFrom,cameraEaseTo,easeOutElastic(cameraEaseT));
-      if(cameraEaseT>=1) cameraEasing=false;
-    }else{
-      cameraY+=(targetCameraY-cameraY)*CAMERA_EASE;
+  // ── CAMERA ──────────────────────────────────────────────────────
+  function startCameraEase(to) {
+    cameraEaseFrom = cameraY; cameraEaseTo = to;
+    cameraEaseT = 0; cameraEasing = true;
+  }
+  function updateCamera() {
+    if (cameraEasing) {
+      cameraEaseT = Math.min(1, cameraEaseT + 0.04);
+      cameraY = lerp(cameraEaseFrom, cameraEaseTo, easeOutElastic(cameraEaseT));
+      if (cameraEaseT >= 1) cameraEasing = false;
+    } else {
+      cameraY += (targetCameraY - cameraY) * CAMERA_EASE;
     }
   }
 
-  // ── BLOCK VISUALS ────────────────────────────────────────────────
-  const _gradCache=new Map();
-  function blockGradient(h,x,y,w){
-    const key=`${h%360}_${Math.round(w)}`;
-    if(_gradCache.has(key)) return _gradCache.get(key);
-    const l1=68,s1=72;
-    const g=ctx.createLinearGradient(0,0,0,BLOCK_H);
-    g.addColorStop(0,  `hsl(${h%360},${s1}%,${l1}%)`);
-    g.addColorStop(0.4,`hsl(${(h+15)%360},${s1-5}%,${l1-8}%)`);
-    g.addColorStop(1,  `hsl(${(h+35)%360},65%,${l1-20}%)`);
-    if(_gradCache.size>80) _gradCache.clear();
-    _gradCache.set(key,g); return g;
+  // ── BLOCK GRADIENT CACHE (keyed by hue bucket + width bucket) ──
+  const _gradCache = new Map();
+  function blockGradient(h, w) {
+    const hk = (h >> 3) << 3; // bucket every 8 hue degrees
+    const wk = Math.round(w / 4) * 4; // bucket every 4px
+    const key = `${hk}_${wk}`;
+    if (_gradCache.has(key)) return _gradCache.get(key);
+    const g = ctx.createLinearGradient(0, 0, 0, BLOCK_H);
+    g.addColorStop(0,   `hsl(${hk%360},72%,68%)`);
+    g.addColorStop(0.4, `hsl(${(hk+15)%360},67%,60%)`);
+    g.addColorStop(1,   `hsl(${(hk+35)%360},65%,48%)`);
+    if (_gradCache.size > 120) _gradCache.clear();
+    _gradCache.set(key, g);
+    return g;
   }
-  function drawBlock(b,alpha=1,isTop=false){
-    const sY=b.y-cameraY+screenShake.y, sX=b.x+screenShake.x;
-    if(sY>canvas.height+60||sY<-80) return;
-    ctx.save(); ctx.globalAlpha=alpha; ctx.translate(sX,sY);
-    if(isTop||comboCount>=3){ ctx.shadowColor=`hsl(${b.color%360},80%,65%)`; ctx.shadowBlur=isTop?10+comboCount*3:6; }
-    ctx.fillStyle=blockGradient(b.color,0,0,b.w);
-    ctx.beginPath(); ctx.roundRect(0,0,b.w,BLOCK_H,4); ctx.fill();
-    ctx.shadowBlur=0;
-    ctx.fillStyle='rgba(255,255,255,0.18)';
-    ctx.beginPath(); ctx.roundRect(2,2,b.w-4,BLOCK_H*0.45,3); ctx.fill();
-    ctx.strokeStyle='rgba(255,255,255,0.15)'; ctx.lineWidth=1;
-    ctx.beginPath(); ctx.roundRect(0.5,0.5,b.w-1,BLOCK_H-1,4); ctx.stroke();
+
+  function drawBlock(b, alpha=1, isTop=false) {
+    const sY = b.y - cameraY + screenShake.y;
+    const sX = b.x + screenShake.x;
+    if (sY > canvas.height + 60 || sY < -80) return;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.translate(sX, sY);
+    if (isTop && comboCount >= 3) {
+      ctx.shadowColor = `hsl(${b.color%360},80%,65%)`;
+      ctx.shadowBlur = 6 + comboCount * 2;
+    }
+    ctx.fillStyle = blockGradient(b.color, b.w);
+    ctx.beginPath(); ctx.roundRect(0, 0, b.w, BLOCK_H, 4); ctx.fill();
+    ctx.shadowBlur = 0;
+    // highlight
+    ctx.fillStyle = 'rgba(255,255,255,0.18)';
+    ctx.beginPath(); ctx.roundRect(2, 2, b.w-4, BLOCK_H*0.45, 3); ctx.fill();
+    // border
+    ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.roundRect(0.5, 0.5, b.w-1, BLOCK_H-1, 4); ctx.stroke();
     ctx.restore();
   }
-  function drawMoving(){
-    if(!moving) return;
-    const sY=moving.y-cameraY+screenShake.y, sX=moving.x+screenShake.x;
-    ctx.save(); ctx.strokeStyle=`hsla(${moving.color},70%,60%,0.13)`; ctx.lineWidth=1; ctx.setLineDash([4,7]);
-    ctx.beginPath(); ctx.moveTo(sX,sY+BLOCK_H/2); ctx.lineTo(sX+moving.w,sY+BLOCK_H/2); ctx.stroke(); ctx.setLineDash([]); ctx.restore();
-    drawBlock(moving,0.92,true);
+
+  function drawMoving() {
+    if (!moving) return;
+    const sY = moving.y - cameraY + screenShake.y;
+    const sX = moving.x + screenShake.x;
+    // guide line
+    ctx.save();
+    ctx.strokeStyle = `hsla(${moving.color},70%,60%,0.10)`;
+    ctx.lineWidth = 1; ctx.setLineDash([4, 7]);
+    ctx.beginPath(); ctx.moveTo(sX, sY+BLOCK_H/2); ctx.lineTo(sX+moving.w, sY+BLOCK_H/2); ctx.stroke();
+    ctx.setLineDash([]); ctx.restore();
+    drawBlock(moving, 0.92, true);
   }
 
-  // ── STARS ────────────────────────────────────────────────────────
-  const STARS=(()=>{
-    const arr=[];
-    [{count:80,rMin:0.4,rMax:0.9,aMin:0.25,aMax:0.55,speed:0.04},
-     {count:50,rMin:0.7,rMax:1.4,aMin:0.40,aMax:0.75,speed:0.10},
-     {count:25,rMin:1.2,rMax:2.2,aMin:0.55,aMax:1.00,speed:0.20}].forEach(c=>{
-      for(let i=0;i<c.count;i++) arr.push({ x:Math.random(), y:Math.random()*4-1, r:c.rMin+Math.random()*(c.rMax-c.rMin), a:c.aMin+Math.random()*(c.aMax-c.aMin), speed:c.speed, twinkle:Math.random()*Math.PI*2, twinkleSpeed:0.02+Math.random()*0.04 });
-    }); return arr;
-  })();
+  // ── STARS (built once, rendered per frame with scroll offset) ───
+  function buildStars() {
+    stars = [];
+    const configs = [
+      {count:70, rMin:0.4, rMax:0.9, aMin:0.25, aMax:0.55, speed:0.04},
+      {count:40, rMin:0.7, rMax:1.4, aMin:0.40, aMax:0.75, speed:0.10},
+      {count:20, rMin:1.2, rMax:2.2, aMin:0.55, aMax:1.00, speed:0.20},
+    ];
+    configs.forEach(c => {
+      for (let i = 0; i < c.count; i++) {
+        stars.push({
+          x: Math.random(), y: Math.random() * 4 - 1,
+          r: c.rMin + Math.random() * (c.rMax - c.rMin),
+          a: c.aMin + Math.random() * (c.aMax - c.aMin),
+          speed: c.speed,
+          twinkle: Math.random() * Math.PI * 2,
+          twinkleSpeed: 0.02 + Math.random() * 0.04,
+          cross: c.rMin > 1,
+        });
+      }
+    });
+  }
 
-  // ── BACKGROUND ───────────────────────────────────────────────────
-  function drawBackground(){
-    const bgG=ctx.createLinearGradient(0,0,0,canvas.height);
-    bgG.addColorStop(0,'#06060f'); bgG.addColorStop(0.5,'#08080e'); bgG.addColorStop(1,'#0c0b10');
-    ctx.fillStyle=bgG; ctx.fillRect(0,0,canvas.width,canvas.height);
-    const depth=Math.max(0,-targetCameraY/2000);
+  // Pre-built gradient strings for background (avoid recreating each frame)
+  let _bgGrad = null, _bgHue = -1;
+  function getBgGrad() {
+    if (_bgHue !== hue) {
+      _bgHue = hue;
+      _bgGrad = null; // invalidate
+    }
+    return _bgGrad;
+  }
 
-    // Nebulae
-    const nCx=canvas.width*0.72,nCy=canvas.height*0.25+(cameraY*0.05)%canvas.height,nR=canvas.width*0.55;
-    const ng=ctx.createRadialGradient(nCx,nCy,0,nCx,nCy,nR);
-    ng.addColorStop(0,`hsla(${hue},65%,28%,0.13)`); ng.addColorStop(0.5,`hsla(${(hue+40)%360},55%,20%,0.07)`); ng.addColorStop(1,'transparent');
-    ctx.fillStyle=ng; ctx.fillRect(0,0,canvas.width,canvas.height);
-    const nCx2=canvas.width*0.20,nCy2=canvas.height*0.68+(cameraY*0.03)%canvas.height,nR2=canvas.width*0.45;
-    const ng2=ctx.createRadialGradient(nCx2,nCy2,0,nCx2,nCy2,nR2);
-    ng2.addColorStop(0,`hsla(${(hue+120)%360},55%,22%,0.10)`); ng2.addColorStop(1,'transparent');
-    ctx.fillStyle=ng2; ctx.fillRect(0,0,canvas.width,canvas.height);
+  function drawBackground() {
+    // Solid bg fill (fast — no gradient needed since it's near-black)
+    ctx.fillStyle = '#07070d';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const w = canvas.width, h = canvas.height;
+
+    // Nebula 1 (only two, simpler radial)
+    const nCx = w * 0.72, nCy = h * 0.25 + (cameraY * 0.05) % h;
+    const ng = ctx.createRadialGradient(nCx, nCy, 0, nCx, nCy, w * 0.55);
+    ng.addColorStop(0,   `hsla(${hue},65%,28%,0.12)`);
+    ng.addColorStop(0.5, `hsla(${(hue+40)%360},55%,20%,0.06)`);
+    ng.addColorStop(1,   'transparent');
+    ctx.fillStyle = ng; ctx.fillRect(0, 0, w, h);
+
+    const nCx2 = w*0.20, nCy2 = h*0.68 + (cameraY*0.03)%h;
+    const ng2 = ctx.createRadialGradient(nCx2, nCy2, 0, nCx2, nCy2, w*0.45);
+    ng2.addColorStop(0, `hsla(${(hue+120)%360},55%,22%,0.09)`);
+    ng2.addColorStop(1, 'transparent');
+    ctx.fillStyle = ng2; ctx.fillRect(0, 0, w, h);
 
     // Stars
-    STARS.forEach(s=>{
-      s.twinkle+=s.twinkleSpeed;
-      const tA=s.a*(0.7+0.3*Math.sin(s.twinkle));
-      const sx=s.x*canvas.width+screenShake.x*s.speed*3;
-      const sy=((s.y*canvas.height*4-cameraY*s.speed)%(canvas.height*1.5)+canvas.height*1.5)%(canvas.height*1.5)-canvas.height*0.25;
-      if(sy<-10||sy>canvas.height+10) return;
-      ctx.globalAlpha=tA; ctx.fillStyle=`hsl(${(hue+180)%360},40%,95%)`;
-      ctx.beginPath(); ctx.arc(sx,sy,s.r,0,Math.PI*2); ctx.fill();
-      if(s.r>1.6){ ctx.globalAlpha=tA*0.35; ctx.strokeStyle=`hsl(${(hue+180)%360},60%,90%)`; ctx.lineWidth=0.6; ctx.beginPath(); ctx.moveTo(sx-s.r*2.5,sy); ctx.lineTo(sx+s.r*2.5,sy); ctx.moveTo(sx,sy-s.r*2.5); ctx.lineTo(sx,sy+s.r*2.5); ctx.stroke(); }
-    });
-    ctx.globalAlpha=1;
+    const tw = performance.now() * 0.001;
+    for (let i = 0; i < stars.length; i++) {
+      const s = stars[i];
+      const tA = s.a * (0.7 + 0.3 * Math.sin(tw * s.twinkleSpeed * 20 + s.twinkle));
+      const sx = s.x * w + screenShake.x * s.speed * 3;
+      const sy = ((s.y * h * 4 - cameraY * s.speed) % (h * 1.5) + h * 1.5) % (h * 1.5) - h * 0.25;
+      if (sy < -10 || sy > h + 10) continue;
+      ctx.globalAlpha = tA;
+      ctx.fillStyle = `hsl(${(hue+180)%360},40%,95%)`;
+      ctx.beginPath(); ctx.arc(sx, sy, s.r, 0, Math.PI*2); ctx.fill();
+      if (s.cross) {
+        ctx.globalAlpha = tA * 0.3;
+        ctx.strokeStyle = `hsl(${(hue+180)%360},60%,90%)`;
+        ctx.lineWidth = 0.6;
+        ctx.beginPath();
+        ctx.moveTo(sx - s.r*2.5, sy); ctx.lineTo(sx + s.r*2.5, sy);
+        ctx.moveTo(sx, sy - s.r*2.5); ctx.lineTo(sx, sy + s.r*2.5);
+        ctx.stroke();
+      }
+    }
+    ctx.globalAlpha = 1;
 
-    // Grid
-    BG_LAYERS.forEach((layer,li)=>{
-      const offset=(cameraY*layer.speed)%layer.size;
-      const sx=screenShake.x*(li+1)*0.3,sy=screenShake.y*(li+1)*0.3;
-      const base=[0.18,0.12,0.07][li];
-      const alpha=(base+depth*0.04)*S.gridOpacity*2;
-      ctx.save(); ctx.strokeStyle=`hsla(${hue},80%,65%,${alpha})`; ctx.lineWidth=li===0?0.8:0.5;
+    // Grid — draw once at low opacity (3 layers → 1 layer for perf)
+    const gridAlpha = S.gridOpacity * 0.07;
+    if (gridAlpha > 0.003) {
+      const gSize = 60;
+      const offset = (cameraY * 0.18) % gSize;
+      ctx.save();
+      ctx.strokeStyle = `hsla(${hue},80%,65%,${gridAlpha})`;
+      ctx.lineWidth = 0.5;
       ctx.beginPath();
-      for(let i=-1;i<Math.ceil(canvas.width/layer.size)+2;i++){ ctx.moveTo(i*layer.size+sx,0); ctx.lineTo(i*layer.size+sx,canvas.height); }
-      for(let i=-1;i<Math.ceil(canvas.height/layer.size)+2;i++){ ctx.moveTo(0,i*layer.size-offset+sy); ctx.lineTo(canvas.width,i*layer.size-offset+sy); }
-      ctx.stroke(); ctx.restore();
-    });
-
-    const gG=ctx.createLinearGradient(0,canvas.height*0.75,0,canvas.height);
-    gG.addColorStop(0,'transparent'); gG.addColorStop(1,`hsla(${hue},60%,18%,0.18)`);
-    ctx.fillStyle=gG; ctx.fillRect(0,0,canvas.width,canvas.height);
-    if(depth>0.05){ const a=Math.min(depth*0.12,0.18); const hG=ctx.createRadialGradient(canvas.width/2,canvas.height*0.15,0,canvas.width/2,canvas.height*0.15,canvas.width*0.75); hG.addColorStop(0,`hsla(${hue},80%,55%,${a})`); hG.addColorStop(1,'transparent'); ctx.fillStyle=hG; ctx.fillRect(0,0,canvas.width,canvas.height); }
-  }
-
-  // ── PARTICLES ────────────────────────────────────────────────────
-  const MAX_PARTICLES=60;
-  function spawnPerfectParticles(cx,cy){
-    const count=Math.min(16+comboCount*3,28);
-    for(let i=0;i<count;i++){
-      const angle=(Math.PI*2/count)*i+Math.random()*0.4, speed=2+Math.random()*3+comboCount*0.4;
-      particles.push({ x:cx,y:cy, vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed-1.2, life:1,maxLife:1, r:2+Math.random()*2.5, color:(hue+Math.random()*50-25+360)%360, rot:Math.random()*Math.PI*2,vrot:(Math.random()-0.5)*0.2, type:Math.random()<0.4?1:0,gravity:0.07 });
-    }
-    for(let i=0;i<5;i++){
-      const angle=Math.random()*Math.PI*2,speed=3.5+Math.random()*4;
-      particles.push({ x:cx,y:cy, vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed, life:0.55,maxLife:0.55,r:0,color:-1, rot:angle,vrot:0,type:2,gravity:0, pvx:Math.cos(angle)*speed,pvy:Math.sin(angle)*speed });
-    }
-    if(particles.length>MAX_PARTICLES) particles.splice(0,particles.length-MAX_PARTICLES);
-  }
-  function spawnFallingChunk(x,y,w,colorH,side){
-    const vx=side==='left'?-1.5-Math.random()*2:1.5+Math.random()*2;
-    fallingChunks.push({x,y,w:Math.max(w,4),vx,vy:-1-Math.random()*1.5,vrot:(Math.random()-0.5)*0.12,rot:0,color:colorH,alpha:1});
-  }
-  function spawnShockwave(cx,cy){ shockwaves.push({x:cx,y:cy,r:0,maxR:90+comboCount*20,life:1,maxLife:1}); }
-
-  function updateParticles(){ for(let i=particles.length-1;i>=0;i--){ const p=particles[i]; p.x+=p.vx;p.y+=p.vy;p.vy+=p.gravity||0;p.vx*=0.96;p.vy*=0.96;p.rot+=p.vrot;p.life-=0.028; if(p.life<=0) particles.splice(i,1); } }
-  function updateFallingChunks(){ for(let i=fallingChunks.length-1;i>=0;i--){ const c=fallingChunks[i]; c.vy+=0.38;c.x+=c.vx;c.y+=c.vy;c.rot+=c.vrot;c.alpha-=0.012; if(c.alpha<=0||c.y-cameraY>canvas.height+60) fallingChunks.splice(i,1); } }
-  function updateShockwaves(){ for(let i=shockwaves.length-1;i>=0;i--){ const s=shockwaves[i]; s.r+=(s.maxR-s.r)*0.14;s.life-=0.04; if(s.life<=0) shockwaves.splice(i,1); } }
-
-  function drawParticles(){
-    if(!particles.length) return;
-    const sx=screenShake.x,sy=screenShake.y-cameraY;
-    for(let i=0;i<particles.length;i++){
-      const p=particles[i],alpha=Math.max(0,p.life/p.maxLife),px=p.x+sx,py=p.y+sy;
-      if(p.type===2){ ctx.globalAlpha=alpha*0.9;ctx.strokeStyle='rgba(255,255,255,0.9)';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px-p.pvx*2.5,py-p.pvy*2.5);ctx.stroke(); }
-      else{ ctx.globalAlpha=alpha;ctx.fillStyle=`hsl(${p.color%360},88%,70%)`; if(p.type===1){ctx.fillRect(px-p.r,py-p.r,p.r*2,p.r*2);}else{ctx.beginPath();ctx.arc(px,py,p.r,0,Math.PI*2);ctx.fill();} }
-    }
-    ctx.globalAlpha=1;
-  }
-  function drawFallingChunks(){
-    fallingChunks.forEach(c=>{
-      const sY=c.y-cameraY+screenShake.y,sX=c.x+screenShake.x;
-      if(sY>canvas.height+80) return;
-      ctx.save();ctx.globalAlpha=c.alpha;ctx.translate(sX+c.w/2,sY+BLOCK_H/2);ctx.rotate(c.rot);
-      ctx.fillStyle=`hsl(${c.color%360},70%,58%)`;ctx.beginPath();ctx.roundRect(-c.w/2,-BLOCK_H/2,c.w,BLOCK_H,3);ctx.fill();
-      ctx.fillStyle='rgba(255,255,255,0.15)';ctx.fillRect(-c.w/2,-BLOCK_H/2,c.w,BLOCK_H*0.4);ctx.restore();
-    });
-  }
-  function drawShockwaves(){
-    shockwaves.forEach(s=>{
-      const sY=s.y-cameraY+screenShake.y,sX=s.x+screenShake.x,alpha=s.life*0.65,lw=Math.max(0.5,s.life*3.5);
-      ctx.save();ctx.globalAlpha=alpha;ctx.strokeStyle=`hsl(${hue},88%,72%)`;ctx.lineWidth=lw;
-      ctx.beginPath();ctx.ellipse(sX,sY,s.r,s.r*0.26,0,0,Math.PI*2);ctx.stroke();
-      ctx.globalAlpha=alpha*0.35;ctx.lineWidth=0.8;ctx.beginPath();ctx.ellipse(sX,sY,s.r*0.55,s.r*0.15,0,0,Math.PI*2);ctx.stroke();ctx.restore();
-    });
-  }
-  function drawShadows(){
-    ctx.save();ctx.globalAlpha=0.08;ctx.fillStyle='#000';ctx.beginPath();
-    blocks.forEach(b=>{ const sY=b.y-cameraY+screenShake.y; if(sY>canvas.height+30||sY<-60) return; ctx.ellipse(b.x+screenShake.x+b.w/2,sY+BLOCK_H+5,b.w*0.42,4,0,0,Math.PI*2); });
-    ctx.fill();ctx.restore();
-  }
-
-  // ── GAME LOGIC ───────────────────────────────────────────────────
-  function makeBase(){ const W=canvas.width,bw=Math.min(W*0.55,260); return{x:W/2-bw/2,w:bw,y:0,color:160}; }
-  function spawnMoving(){
-    const last=blocks[blocks.length-1],dir=(Math.random()<0.5)?1:-1;
-    const startX=dir===1?-last.w-20:canvas.width+20;
-    hue=(hue+18)%360;
-    moving={x:startX,w:last.w,y:last.y-BLOCK_H,dir,color:hue};
-  }
-
-  function initGame(){
-    blocks=[];moving=null;score=0;hue=160;
-    particles=[];fallingChunks=[];shockwaves=[];
-    comboCount=0;currentStreak=0;screenShake.mag=0;
-    streakModeActive=false; streakModeBadge.classList.remove('visible');
-    const base=makeBase();
-    for(let i=0;i<GROUND_BLOCKS;i++) blocks.push({x:base.x,w:base.w,y:-i*BLOCK_H,color:hue+i*15});
-    const top=blocks[blocks.length-1];
-    targetCameraY=top.y-canvas.height*0.7; cameraY=targetCameraY; cameraEasing=false;
-    scoreEl.textContent='0'; updateComboUI(); spawnMoving();
-  }
-
-  function updateComboUI(){
-    if(comboCount>=2){ comboCountEl.textContent=`×${comboCount}`; comboHud.classList.add('visible'); scoreEl.classList.add('combo-glow'); }
-    else { comboHud.classList.remove('visible'); scoreEl.classList.remove('combo-glow'); }
-  }
-  function resetCombo(){ comboCount=0; updateComboUI(); }
-
-  function placeBlock(){
-    if(!moving||!gameRunning) return;
-    const last=blocks[blocks.length-1];
-    const oS=Math.max(moving.x,last.x), oE=Math.min(moving.x+moving.w,last.x+last.w), overlap=oE-oS;
-    if(overlap<=0){ endGame(); return; }
-
-    const diff=Math.abs(moving.x-last.x);
-    let isPerfect=false;
-
-    if(diff<=PERFECT_TOL){
-      moving.x=last.x; moving.w=last.w;
-      isPerfect=true; comboCount++; currentStreak++; recordStreak(currentStreak);
-    }else{
-      if(moving.x<last.x){ spawnFallingChunk(moving.x,moving.y,last.x-moving.x,moving.color,'left'); sfxChunk(); }
-      if(moving.x+moving.w>last.x+last.w){ spawnFallingChunk(last.x+last.w,moving.y,(moving.x+moving.w)-(last.x+last.w),moving.color,'right'); sfxChunk(); }
-      moving.w=overlap; moving.x=oS;
-      resetCombo(); currentStreak=0;
+      for (let i = -1; i < Math.ceil(w/gSize)+2; i++) {
+        ctx.moveTo(i*gSize, 0); ctx.lineTo(i*gSize, h);
+      }
+      for (let i = -1; i < Math.ceil(h/gSize)+2; i++) {
+        ctx.moveTo(0, i*gSize - offset); ctx.lineTo(w, i*gSize - offset);
+      }
+      ctx.stroke();
+      ctx.restore();
     }
 
-    if(isPerfect){
-      // ── HAPTIC: tiered pattern ───────────────────────────────────
-      if(currentStreak<=1)       haptic(HAP_PERFECT);
-      else if(currentStreak===2) haptic(HAP_PERFECT2);
-      else                       haptic(HAP_PERFECT3);
+    // Ground glow
+    const gG = ctx.createLinearGradient(0, h*0.75, 0, h);
+    gG.addColorStop(0, 'transparent');
+    gG.addColorStop(1, `hsla(${hue},60%,18%,0.15)`);
+    ctx.fillStyle = gG; ctx.fillRect(0, 0, w, h);
+  }
 
+  // ── PARTICLES ───────────────────────────────────────────────────
+  function spawnPerfectParticles(cx, cy) {
+    if (!S.particles) return;
+    const count = Math.min(14 + comboCount*2, 24);
+    for (let i = 0; i < count; i++) {
+      if (particles.length >= MAX_PARTICLES) break;
+      const angle = (Math.PI*2/count)*i + Math.random()*0.4;
+      const speed = 2 + Math.random()*3 + comboCount*0.3;
+      particles.push({
+        x: cx, y: cy,
+        vx: Math.cos(angle)*speed, vy: Math.sin(angle)*speed - 1.2,
+        life: 1, maxLife: 1,
+        r: 2 + Math.random()*2.5,
+        color: (hue + Math.random()*50-25+360)%360,
+        type: Math.random()<0.35 ? 1 : 0,
+        gravity: 0.07,
+      });
+    }
+    // spark lines
+    for (let i = 0; i < 4; i++) {
+      if (particles.length >= MAX_PARTICLES) break;
+      const angle = Math.random()*Math.PI*2;
+      const speed = 3.5 + Math.random()*4;
+      const vx = Math.cos(angle)*speed, vy = Math.sin(angle)*speed;
+      particles.push({ x:cx, y:cy, vx, vy, pvx:vx, pvy:vy, life:0.5, maxLife:0.5, r:0, color:-1, type:2, gravity:0 });
+    }
+  }
+
+  function spawnFallingChunk(x, y, w, colorH, side) {
+    if (fallingChunks.length >= MAX_CHUNKS) return;
+    const vx = side==='left' ? -1.5-Math.random()*2 : 1.5+Math.random()*2;
+    fallingChunks.push({ x, y, w: Math.max(w, 4), vx, vy: -1-Math.random()*1.5, vrot:(Math.random()-0.5)*0.12, rot:0, color:colorH, alpha:1 });
+  }
+
+  function spawnShockwave(cx, cy) {
+    if (shockwaves.length >= MAX_SHOCKWAVES) return;
+    shockwaves.push({ x:cx, y:cy, r:0, maxR:90+comboCount*18, life:1 });
+  }
+
+  function updateParticles() {
+    for (let i = particles.length-1; i >= 0; i--) {
+      const p = particles[i];
+      p.x += p.vx; p.y += p.vy;
+      p.vy += p.gravity || 0;
+      p.vx *= 0.96; p.vy *= 0.96;
+      p.life -= 0.030;
+      if (p.life <= 0) particles.splice(i, 1);
+    }
+  }
+
+  function updateFallingChunks() {
+    for (let i = fallingChunks.length-1; i >= 0; i--) {
+      const c = fallingChunks[i];
+      c.vy += 0.38; c.x += c.vx; c.y += c.vy;
+      c.rot += c.vrot; c.alpha -= 0.013;
+      if (c.alpha <= 0 || c.y - cameraY > canvas.height + 60) fallingChunks.splice(i, 1);
+    }
+  }
+
+  function updateShockwaves() {
+    for (let i = shockwaves.length-1; i >= 0; i--) {
+      const s = shockwaves[i];
+      s.r += (s.maxR - s.r) * 0.14; s.life -= 0.045;
+      if (s.life <= 0) shockwaves.splice(i, 1);
+    }
+  }
+
+  function drawParticles() {
+    if (!particles.length) return;
+    const ox = screenShake.x, oy = screenShake.y - cameraY;
+    for (let i = 0; i < particles.length; i++) {
+      const p = particles[i];
+      const alpha = Math.max(0, p.life / p.maxLife);
+      const px = p.x + ox, py = p.y + oy;
+      ctx.globalAlpha = alpha;
+      if (p.type === 2) {
+        ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px - p.pvx*2.5, py - p.pvy*2.5); ctx.stroke();
+      } else {
+        ctx.fillStyle = `hsl(${p.color%360},88%,70%)`;
+        if (p.type === 1) { ctx.fillRect(px-p.r, py-p.r, p.r*2, p.r*2); }
+        else { ctx.beginPath(); ctx.arc(px, py, p.r, 0, Math.PI*2); ctx.fill(); }
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function drawFallingChunks() {
+    for (let i = 0; i < fallingChunks.length; i++) {
+      const c = fallingChunks[i];
+      const sY = c.y - cameraY + screenShake.y;
+      const sX = c.x + screenShake.x;
+      if (sY > canvas.height + 80) continue;
+      ctx.save();
+      ctx.globalAlpha = c.alpha;
+      ctx.translate(sX + c.w/2, sY + BLOCK_H/2);
+      ctx.rotate(c.rot);
+      ctx.fillStyle = `hsl(${c.color%360},70%,58%)`;
+      ctx.beginPath(); ctx.roundRect(-c.w/2, -BLOCK_H/2, c.w, BLOCK_H, 3); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.13)';
+      ctx.fillRect(-c.w/2, -BLOCK_H/2, c.w, BLOCK_H*0.4);
+      ctx.restore();
+    }
+  }
+
+  function drawShockwaves() {
+    for (let i = 0; i < shockwaves.length; i++) {
+      const s = shockwaves[i];
+      const sY = s.y - cameraY + screenShake.y;
+      const sX = s.x + screenShake.x;
+      const alpha = s.life * 0.6;
+      const lw = Math.max(0.5, s.life * 3);
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.strokeStyle = `hsl(${hue},88%,72%)`;
+      ctx.lineWidth = lw;
+      ctx.beginPath();
+      ctx.ellipse(sX, sY, s.r, s.r*0.25, 0, 0, Math.PI*2);
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  // Batch shadow draw (single path for all visible blocks)
+  function drawShadows() {
+    ctx.save();
+    ctx.globalAlpha = 0.07;
+    ctx.fillStyle = '#000';
+    ctx.beginPath();
+    for (let i = 0; i < blocks.length; i++) {
+      const b = blocks[i];
+      const sY = b.y - cameraY + screenShake.y;
+      if (sY > canvas.height+30 || sY < -60) continue;
+      ctx.ellipse(b.x + screenShake.x + b.w/2, sY + BLOCK_H + 5, b.w*0.42, 4, 0, 0, Math.PI*2);
+    }
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // ── GAME LOGIC ──────────────────────────────────────────────────
+  function makeBase() {
+    const bw = Math.min(canvas.width * 0.55, 260);
+    return { x: canvas.width/2 - bw/2, w: bw, y: 0, color: 160 };
+  }
+
+  function spawnMoving() {
+    const last = blocks[blocks.length-1];
+    const dir = (Math.random() < 0.5) ? 1 : -1;
+    const startX = dir === 1 ? -last.w - 20 : canvas.width + 20;
+    hue = (hue + 18) % 360;
+    _gradCache.clear(); // invalidate gradient cache on hue shift
+    moving = { x: startX, w: last.w, y: last.y - BLOCK_H, dir, color: hue };
+  }
+
+  function initGame() {
+    blocks = []; moving = null; score = 0; hue = 160;
+    particles = []; fallingChunks = []; shockwaves = [];
+    comboCount = 0; currentStreak = 0; screenShake.mag = 0;
+    streakModeActive = false; streakModeBadge.classList.remove('visible');
+    _gradCache.clear();
+    const base = makeBase();
+    for (let i = 0; i < GROUND_BLOCKS; i++) blocks.push({ x:base.x, w:base.w, y:-i*BLOCK_H, color:hue+i*15 });
+    const top = blocks[blocks.length-1];
+    targetCameraY = top.y - canvas.height * 0.7;
+    cameraY = targetCameraY; cameraEasing = false;
+    scoreEl.textContent = '0'; updateComboUI(); spawnMoving();
+  }
+
+  function updateComboUI() {
+    if (comboCount >= 2) {
+      comboCountEl.textContent = `×${comboCount}`;
+      comboHud.classList.add('visible');
+      scoreEl.classList.add('combo-glow');
+    } else {
+      comboHud.classList.remove('visible');
+      scoreEl.classList.remove('combo-glow');
+    }
+  }
+  function resetCombo() { comboCount = 0; updateComboUI(); }
+
+  function placeBlock() {
+    if (!moving || !gameRunning) return;
+    const last = blocks[blocks.length-1];
+    const oS = Math.max(moving.x, last.x);
+    const oE = Math.min(moving.x + moving.w, last.x + last.w);
+    const overlap = oE - oS;
+    if (overlap <= 0) { endGame(); return; }
+
+    const diff = Math.abs(moving.x - last.x);
+    let isPerfect = false;
+
+    if (diff <= PERFECT_TOL) {
+      moving.x = last.x; moving.w = last.w;
+      isPerfect = true; comboCount++; currentStreak++; recordStreak(currentStreak);
+    } else {
+      if (moving.x < last.x) { spawnFallingChunk(moving.x, moving.y, last.x-moving.x, moving.color, 'left'); sfxChunk(); }
+      if (moving.x+moving.w > last.x+last.w) { spawnFallingChunk(last.x+last.w, moving.y, (moving.x+moving.w)-(last.x+last.w), moving.color, 'right'); sfxChunk(); }
+      moving.w = overlap; moving.x = oS;
+      resetCombo(); currentStreak = 0;
+    }
+
+    if (isPerfect) {
       triggerPerfect(currentStreak);
       sfxPerfect(currentStreak);
-      if(S.particles){ spawnPerfectParticles(moving.x+moving.w/2,moving.y+BLOCK_H/2); spawnShockwave(moving.x+moving.w/2,moving.y+BLOCK_H/2); }
-      triggerShake(3+comboCount*0.8);
-
-      // ── STREAK MODE: activate at STREAK_THRESH ───────────────────
-      setStreakMode(currentStreak>=STREAK_THRESH);
-    }else{
-      haptic(HAP_PLACE); // subtle place thud
-      sfxPlace(moving.w); triggerShake(1.5);
-      setStreakMode(false); // streak broken → normal music
+      if (S.particles) {
+        spawnPerfectParticles(moving.x + moving.w/2, moving.y + BLOCK_H/2);
+        spawnShockwave(moving.x + moving.w/2, moving.y + BLOCK_H/2);
+      }
+      triggerShake(3 + comboCount * 0.7);
+      setStreakMode(currentStreak >= STREAK_THRESH);
+    } else {
+      sfxPlace(moving.w);
+      triggerShake(1.5);
+      setStreakMode(false);
     }
 
-    blocks.push({x:moving.x,w:moving.w,y:moving.y,color:moving.color});
-    score++; scoreEl.textContent=score;
-    if(score>best){ best=score; bestEl.textContent=best; }
-    if(score%5===0){ showSpeedBadge(); sfxSpeedUp(); }
+    blocks.push({ x:moving.x, w:moving.w, y:moving.y, color:moving.color });
+    score++; scoreEl.textContent = score;
+    if (score > best) { best = score; bestEl.textContent = best; }
+    if (score % 5 === 0) { showSpeedBadge(); sfxSpeedUp(); }
     updateComboUI();
 
-    const newTop=blocks[blocks.length-1];
-    targetCameraY=newTop.y-canvas.height*0.68;
+    const newTop = blocks[blocks.length-1];
+    targetCameraY = newTop.y - canvas.height * 0.68;
     startCameraEase(targetCameraY);
     spawnMoving();
   }
 
-  function triggerPerfect(streak){
-    perfectEl.classList.remove('pop','tier3');
+  function triggerPerfect(streak) {
+    perfectEl.classList.remove('pop', 'tier3');
     void perfectEl.offsetWidth;
     perfectEl.classList.add('pop');
-    if(streak>=3) perfectEl.classList.add('tier3');
+    if (streak >= 3) perfectEl.classList.add('tier3');
   }
 
-  function showSpeedBadge(){
+  function showSpeedBadge() {
     speedBadge.classList.add('show');
     clearTimeout(speedBadgeTimer);
-    speedBadgeTimer=setTimeout(()=>speedBadge.classList.remove('show'),1800);
+    speedBadgeTimer = setTimeout(() => speedBadge.classList.remove('show'), 1800);
   }
 
-  function endGame(){
-    gameRunning=false;
+  function endGame() {
+    gameRunning = false;
     setStreakMode(false);
     musicStop(); sfxGameOver();
-    haptic(HAP_GAMEOVER);
-    isFirstGame=false;
-    menuSub.innerHTML=`SCORE &nbsp;<strong style="color:var(--accent)">${score}</strong>&nbsp;&nbsp;·&nbsp;&nbsp;BEST &nbsp;<strong style="color:var(--accent)">${best}</strong>`;
-    startBtn.textContent='▶  TRY AGAIN';
-    menuBestRow.style.display='none';
+    isFirstGame = false;
+    menuSub.innerHTML = `SCORE &nbsp;<strong style="color:var(--accent)">${score}</strong>&nbsp;&nbsp;·&nbsp;&nbsp;BEST &nbsp;<strong style="color:var(--accent)">${best}</strong>`;
+    startBtn.textContent = '▶  TRY AGAIN';
+    menuBestRow.style.display = 'none';
     menuScreen.classList.remove('hidden');
   }
 
-  // ── GAME LOOP ────────────────────────────────────────────────────
-  function loop(){
+  // ── GAME LOOP ───────────────────────────────────────────────────
+  // Throttle DOM score update to avoid layout thrash
+  let lastScoreDisplay = -1;
+  function loop() {
     drawBackground();
     updateCamera(); updateShake();
     updateParticles(); updateFallingChunks(); updateShockwaves();
-    if(moving&&gameRunning){
-      const speed=getSpeed(); moving.x+=moving.dir*speed;
-      if(moving.x>canvas.width+10) moving.dir=-1;
-      if(moving.x+moving.w<-10)    moving.dir=1;
+
+    if (moving && gameRunning) {
+      const speed = getSpeed();
+      moving.x += moving.dir * speed;
+      if (moving.x > canvas.width + 10)    moving.dir = -1;
+      if (moving.x + moving.w < -10)       moving.dir = 1;
     }
-    blocks.forEach((b,i)=>drawBlock(b,1,i===blocks.length-1));
-    drawShadows(); drawShockwaves(); drawFallingChunks(); drawParticles(); drawMoving();
-    animId=requestAnimationFrame(loop);
+
+    // Draw blocks (only those in view — already culled in drawBlock)
+    for (let i = 0; i < blocks.length; i++) drawBlock(blocks[i], 1, i === blocks.length-1);
+    drawShadows();
+    drawShockwaves();
+    drawFallingChunks();
+    drawParticles();
+    drawMoving();
+
+    animId = requestAnimationFrame(loop);
   }
 
-  // ── INPUT ────────────────────────────────────────────────────────
-  function handleAction(){ if(gameRunning) placeBlock(); }
-  window.addEventListener('keydown',e=>{
-    if(e.code==='Space'){ e.preventDefault(); if(!gameRunning&&!settingsPanel.classList.contains('open')) startGame(); else handleAction(); }
-    if(e.code==='Escape') closeSettings();
-  });
-  canvas.addEventListener('pointerdown',e=>{ e.preventDefault(); handleAction(); });
+  // ── INPUT ───────────────────────────────────────────────────────
+  function handleAction() { if (gameRunning) placeBlock(); }
 
-  // ── START ────────────────────────────────────────────────────────
-  function startGame(){
-    menuScreen.classList.add('hidden'); settingsPanel.classList.remove('open');
-    initGame(); gameRunning=true;
+  window.addEventListener('keydown', e => {
+    if (e.code === 'Space') {
+      e.preventDefault();
+      if (!gameRunning && !settingsPanel.classList.contains('open')) startGame();
+      else handleAction();
+    }
+    if (e.code === 'Escape') closeSettings();
+  });
+
+  // Single pointer handler — no redundant touch events
+  canvas.addEventListener('pointerdown', e => { e.preventDefault(); handleAction(); }, { passive: false });
+
+  // ── START ───────────────────────────────────────────────────────
+  function startGame() {
+    menuScreen.classList.add('hidden');
+    settingsPanel.classList.remove('open');
+    initGame(); gameRunning = true;
     musicStop(); musicStart();
-    if(animId) cancelAnimationFrame(animId);
+    if (animId) cancelAnimationFrame(animId);
     loop();
   }
 
-  // ── SETTINGS ─────────────────────────────────────────────────────
-  function openSettings(){ settingsPanel.classList.add('open'); }
-  function closeSettings(){ settingsPanel.classList.remove('open'); }
-  settingsBtn.addEventListener('click',openSettings);
-  menuSettBtn.addEventListener('click',openSettings);
-  settingsClose.addEventListener('click',closeSettings);
-  settingsPlayBtn.addEventListener('click',closeSettings);
-  settingsPanel.addEventListener('click',e=>{ if(e.target===settingsPanel) closeSettings(); });
+  // ── SETTINGS ────────────────────────────────────────────────────
+  function openSettings()  { settingsPanel.classList.add('open'); }
+  function closeSettings() { settingsPanel.classList.remove('open'); }
+  settingsBtn.addEventListener('click', openSettings);
+  menuSettBtn.addEventListener('click', openSettings);
+  settingsClose.addEventListener('click', closeSettings);
+  settingsPlayBtn.addEventListener('click', closeSettings);
+  settingsPanel.addEventListener('click', e => { if (e.target === settingsPanel) closeSettings(); });
 
-  document.querySelectorAll('.toggle').forEach(tog=>{
-    tog.addEventListener('click',()=>{
-      const key=tog.dataset.key; S[key]=!S[key]; tog.classList.toggle('on',S[key]);
-      if(key==='music'){ if(S.music&&gameRunning) musicStart(); else if(!S.music) musicStop(); }
-      if(key==='shake'&&!S.shake){ screenShake.x=0;screenShake.y=0;screenShake.mag=0; }
+  document.querySelectorAll('.toggle').forEach(tog => {
+    tog.addEventListener('click', () => {
+      const key = tog.dataset.key; S[key] = !S[key]; tog.classList.toggle('on', S[key]);
+      if (key === 'music') { if (S.music && gameRunning) musicStart(); else if (!S.music) musicStop(); }
+      if (key === 'shake' && !S.shake) { screenShake.x = 0; screenShake.y = 0; screenShake.mag = 0; }
     });
   });
 
-  function bindSlider(id,valId,cb){
-    const sl=document.getElementById(id),vl=document.getElementById(valId);
-    sl.addEventListener('input',()=>{ vl.textContent=sl.value; cb(parseFloat(sl.value)/100); });
+  function bindSlider(id, valId, cb) {
+    const sl = document.getElementById(id), vl = document.getElementById(valId);
+    sl.addEventListener('input', () => { vl.textContent = sl.value; cb(parseFloat(sl.value)/100); });
   }
-  bindSlider('sl-music-vol','sl-music-vol-val',v=>{
-    S.musicVol=v;
-    if(masterGain&&audioCtx){
-      const now=audioCtx.currentTime, target=streakModeActive?STREAK_MASTER_GAIN:NORMAL_MASTER_GAIN;
+  bindSlider('sl-music-vol', 'sl-music-vol-val', v => {
+    S.musicVol = v;
+    if (masterGain && audioCtx) {
+      const now = audioCtx.currentTime;
+      const target = streakModeActive ? STREAK_MASTER_GAIN : NORMAL_MASTER_GAIN;
       masterGain.gain.cancelScheduledValues(now);
-      masterGain.gain.setValueAtTime(S.music?target*v:0,now);
+      masterGain.gain.setValueAtTime(S.music ? target*v : 0, now);
     }
   });
-  bindSlider('sl-sfx-vol','sl-sfx-vol-val',v=>{ S.sfxVol=v; });
-  bindSlider('sl-grid','sl-grid-val',v=>{ S.gridOpacity=v; });
+  bindSlider('sl-sfx-vol', 'sl-sfx-vol-val', v => { S.sfxVol = v; });
+  bindSlider('sl-grid', 'sl-grid-val', v => { S.gridOpacity = v; });
 
-  document.querySelectorAll('.swatch').forEach(sw=>{
-    sw.addEventListener('click',()=>{
-      S.theme=sw.dataset.theme; document.body.setAttribute('data-theme',S.theme);
+  document.querySelectorAll('.swatch').forEach(sw => {
+    sw.addEventListener('click', () => {
+      S.theme = sw.dataset.theme;
+      document.body.setAttribute('data-theme', S.theme);
       _gradCache.clear();
-      document.querySelectorAll('.swatch').forEach(s=>s.classList.remove('active'));
+      document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
       sw.classList.add('active');
     });
   });
 
-  startBtn.addEventListener('click',startGame);
-  menuBestRow.style.display=best>0?'block':'none';
-  menuBestVal.textContent=best;
+  startBtn.addEventListener('click', startGame);
+  menuBestRow.style.display = best > 0 ? 'block' : 'none';
+  menuBestVal.textContent = best;
 
   loop();
 })();
