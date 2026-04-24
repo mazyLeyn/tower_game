@@ -435,176 +435,382 @@
   function sfxSpeedUp(){ const ac=getAudio(),now=ac.currentTime; [0,0.06,0.12].forEach((dt,i)=>{ playTone({type:'square',freq:320+i*120,freqEnd:360+i*120,vol:0.07,attack:0.005,decay:0.08,t:now+dt}); }); }
   function sfxGameOver(){ const ac=getAudio(),now=ac.currentTime; playNoise({vol:0.18,decay:0.25,t:now}); [0,0.08,0.18,0.30].forEach((dt,i)=>{ playTone({type:'sawtooth',freq:400-i*70,freqEnd:200-i*30,vol:0.14-i*0.02,attack:0.005,decay:0.18,t:now+dt}); }); }
 
-  // ── MUSIC ENGINE ─────────────────────────────────────────────────
-  // Architecture:
-  //   masterGain → ac.destination
-  //   drumBus → streakFilter → masterGain  (drums routed through streak LP filter)
-  //   melodBus → masterGain               (melody always clear)
+  // ══════════════════════════════════════════════════════════════════
+  // ── NEW MUSIC ENGINE — "Sky High" ────────────────────────────────
   //
-  // Streak mode: streakFilter cutoff drops (muffled drums),
-  //              melodBus gain rises (chimes more present),
-  //              masterGain ducks slightly so SFX chimes pop forward.
+  //  Graph:  drumBus ──┐
+  //          melodBus ─┼─► streakFilter ─► masterGain ─► destination
+  //          leadBus ──┘
+  //
+  //  Key: Am pentatonic — A C D E G  (Hz ladder below)
+  //  BPM: starts 95, climbs to 135 with score
+  //  Sections (each = 2 bars = 32 steps), cycling A→B→C→D→A…
+  //    A  GROOVE   : punchy kick/snare, funky bass walk, soft arp pad
+  //    B  MELODIC  : same groove + lead melody hook (the "earworm")
+  //    C  BUILDUP  : extra off-beat kicks, rising bass filter, fast arp
+  //    D  DROP     : four-on-floor kick, fat bass, lead + high synth layer
+  //
+  //  Streak mode: adds a distorted "power" layer + phaser sweep on drums
+  // ══════════════════════════════════════════════════════════════════
 
-  let musicRunning=false, musicStep=0, nextStepTime=0;
-  let scheduleAhead=0.10, scheduleTimer=null;
-  let masterGain=null, drumBus=null, melodBus=null, streakFilter=null;
+  let musicRunning=false, musicStep=0, musicBar=0, nextStepTime=0;
+  let scheduleAhead=0.12, scheduleTimer=null;
+  let masterGain=null, drumBus=null, melodBus=null, leadBus=null, streakFilter=null;
 
-  // Smooth transition targets
-  const NORMAL_DRUM_CUTOFF  = 18000; // essentially open
-  const STREAK_DRUM_CUTOFF  = 600;   // dark, muffled
-  const NORMAL_MELOD_GAIN   = 0.55;
-  const STREAK_MELOD_GAIN   = 0.90;  // melody more present in streak
-  const NORMAL_MASTER_GAIN  = 0.72;
-  const STREAK_MASTER_GAIN  = 0.60;  // slightly quieter so SFX chimes pop
+  // ─ Section counter (each section = 32 steps = 2 bars) ─
+  let sectionStep=0;   // counts 0..31 within current section
+  let sectionIdx=0;    // 0=GROOVE 1=MELODIC 2=BUILDUP 3=DROP
 
-  function getBPM(){ return Math.min(70+score*0.8,110); }
-  function stepSec(){ return 60/getBPM()/4; }
+  const SECTIONS=['groove','melodic','buildup','drop'];
 
+  const NORMAL_DRUM_CUTOFF = 18000;
+  const STREAK_DRUM_CUTOFF = 500;
+  const NORMAL_MELOD_GAIN  = 0.60;
+  const STREAK_MELOD_GAIN  = 0.85;
+  const NORMAL_MASTER_GAIN = 0.70;
+  const STREAK_MASTER_GAIN = 0.55;
+
+  // ─ BPM: 95 → 135 ─
+  function getBPM(){ return Math.min(95 + score*0.65, 135); }
+  function stepSec(){ return 60/getBPM()/4; }   // 16th-note duration
+
+  // ─ Note table (Hz) — Am pentatonic + octaves ─
+  const N={
+    // bass register
+    A2:110, C3:130.8, D3:146.8, E3:164.8, G3:196,
+    // mid register
+    A3:220, C4:261.6, D4:293.7, E4:329.6, G4:392,
+    // high register
+    A4:440, C5:523.2, D5:587.3, E5:659.2, G5:784, A5:880,
+  };
+
+  // ════════════════════════════════════════════
+  // GRAPH BUILDER
+  // ════════════════════════════════════════════
   function buildMusicGraph(){
-    if(masterGain) return; // already built
+    if(masterGain) return;
     const ac=getAudio();
-    masterGain = ac.createGain(); masterGain.gain.value=0; masterGain.connect(ac.destination);
 
-    // Drum bus → lowpass filter → master
-    streakFilter = ac.createBiquadFilter();
-    streakFilter.type='lowpass';
-    streakFilter.frequency.value=NORMAL_DRUM_CUTOFF;
-    streakFilter.Q.value=0.7;
+    masterGain=ac.createGain(); masterGain.gain.value=0; masterGain.connect(ac.destination);
+
+    streakFilter=ac.createBiquadFilter();
+    streakFilter.type='lowpass'; streakFilter.frequency.value=NORMAL_DRUM_CUTOFF; streakFilter.Q.value=0.5;
     streakFilter.connect(masterGain);
 
-    drumBus = ac.createGain(); drumBus.gain.value=1.0; drumBus.connect(streakFilter);
-
-    // Melody bus → master (bypasses filter)
-    melodBus = ac.createGain(); melodBus.gain.value=NORMAL_MELOD_GAIN; melodBus.connect(masterGain);
+    drumBus=ac.createGain();  drumBus.gain.value=1.0;  drumBus.connect(streakFilter);
+    melodBus=ac.createGain(); melodBus.gain.value=NORMAL_MELOD_GAIN; melodBus.connect(masterGain);
+    leadBus=ac.createGain();  leadBus.gain.value=0;    leadBus.connect(masterGain); // muted until section B
   }
 
-  // Apply streak mode transition smoothly (~0.5s ramp)
   function applyMusicStreakMode(active){
     if(!audioCtx||!streakFilter) return;
-    const ac=audioCtx, now=ac.currentTime, ramp=0.5;
-    const targetCutoff = active ? STREAK_DRUM_CUTOFF  : NORMAL_DRUM_CUTOFF;
-    const targetMelod  = active ? STREAK_MELOD_GAIN   : NORMAL_MELOD_GAIN;
-    const targetMaster = active ? STREAK_MASTER_GAIN  : NORMAL_MASTER_GAIN;
-
+    const ac=audioCtx, now=ac.currentTime, ramp=0.45;
+    const tCutoff = active?STREAK_DRUM_CUTOFF:NORMAL_DRUM_CUTOFF;
+    const tMelod  = active?STREAK_MELOD_GAIN:NORMAL_MELOD_GAIN;
+    const tMaster = active?STREAK_MASTER_GAIN:NORMAL_MASTER_GAIN;
     streakFilter.frequency.cancelScheduledValues(now);
     streakFilter.frequency.setValueAtTime(streakFilter.frequency.value,now);
-    streakFilter.frequency.exponentialRampToValueAtTime(targetCutoff, now+ramp);
-
+    streakFilter.frequency.exponentialRampToValueAtTime(tCutoff,now+ramp);
     melodBus.gain.cancelScheduledValues(now);
     melodBus.gain.setValueAtTime(melodBus.gain.value,now);
-    melodBus.gain.linearRampToValueAtTime(targetMelod, now+ramp);
-
+    melodBus.gain.linearRampToValueAtTime(tMelod,now+ramp);
     masterGain.gain.cancelScheduledValues(now);
     masterGain.gain.setValueAtTime(masterGain.gain.value,now);
-    masterGain.gain.linearRampToValueAtTime(targetMaster*S.musicVol, now+ramp);
+    masterGain.gain.linearRampToValueAtTime(tMaster*S.musicVol,now+ramp);
   }
 
-  // Beat generators — drums route to drumBus, arp/bass to melodBus
-  function beatKick(t){
+  // ════════════════════════════════════════════
+  // DRUM VOICES
+  // ════════════════════════════════════════════
+  function drumKick(t, vol=0.95){
     try{
       const ac=getAudio(),db=drumBus;
-      const osc=ac.createOscillator(),g=ac.createGain();
-      osc.type='sine'; osc.frequency.setValueAtTime(160,t); osc.frequency.exponentialRampToValueAtTime(40,t+0.25);
-      g.gain.setValueAtTime(0.9,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.28);
-      osc.connect(g); g.connect(db); osc.start(t); osc.stop(t+0.30);
-      const n=ac.createOscillator(),ng=ac.createGain();
-      n.type='square'; n.frequency.value=80;
-      ng.gain.setValueAtTime(0.3,t); ng.gain.exponentialRampToValueAtTime(0.001,t+0.02);
-      n.connect(ng); ng.connect(db); n.start(t); n.stop(t+0.02);
+      // sub body
+      const o=ac.createOscillator(),g=ac.createGain();
+      o.type='sine'; o.frequency.setValueAtTime(180,t); o.frequency.exponentialRampToValueAtTime(38,t+0.22);
+      g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.30);
+      o.connect(g); g.connect(db); o.start(t); o.stop(t+0.32);
+      // click transient
+      const o2=ac.createOscillator(),g2=ac.createGain();
+      o2.type='triangle'; o2.frequency.value=120;
+      g2.gain.setValueAtTime(vol*0.4,t); g2.gain.exponentialRampToValueAtTime(0.001,t+0.025);
+      o2.connect(g2); g2.connect(db); o2.start(t); o2.stop(t+0.03);
     }catch(e){}
   }
-  function beatSnare(t){
+
+  function drumSnare(t, vol=0.55){
     try{
       const ac=getAudio(),db=drumBus;
-      const osc=ac.createOscillator(),og=ac.createGain();
-      osc.type='triangle'; osc.frequency.value=200;
-      og.gain.setValueAtTime(0.4,t); og.gain.exponentialRampToValueAtTime(0.001,t+0.14);
-      osc.connect(og); og.connect(db); osc.start(t); osc.stop(t+0.15);
-      const bufLen=Math.floor(ac.sampleRate*0.18);
-      const buf=ac.createBuffer(1,bufLen,ac.sampleRate),data=buf.getChannelData(0);
-      for(let i=0;i<bufLen;i++) data[i]=Math.random()*2-1;
+      // tone
+      const o=ac.createOscillator(),og=ac.createGain();
+      o.type='triangle'; o.frequency.value=220;
+      og.gain.setValueAtTime(vol*0.7,t); og.gain.exponentialRampToValueAtTime(0.001,t+0.12);
+      o.connect(og); og.connect(db); o.start(t); o.stop(t+0.13);
+      // noise body
+      const bLen=Math.floor(ac.sampleRate*0.20);
+      const buf=ac.createBuffer(1,bLen,ac.sampleRate),data=buf.getChannelData(0);
+      for(let i=0;i<bLen;i++) data[i]=Math.random()*2-1;
       const src=ac.createBufferSource(); src.buffer=buf;
-      const filt=ac.createBiquadFilter(); filt.type='highpass'; filt.frequency.value=1200;
+      const filt=ac.createBiquadFilter(); filt.type='bandpass'; filt.frequency.value=2500; filt.Q.value=0.6;
       const ng=ac.createGain();
-      ng.gain.setValueAtTime(0.5,t); ng.gain.exponentialRampToValueAtTime(0.001,t+0.18);
-      src.connect(filt); filt.connect(ng); ng.connect(db); src.start(t); src.stop(t+0.19);
+      ng.gain.setValueAtTime(vol*0.85,t); ng.gain.exponentialRampToValueAtTime(0.001,t+0.20);
+      src.connect(filt); filt.connect(ng); ng.connect(db); src.start(t); src.stop(t+0.21);
     }catch(e){}
   }
-  function beatHiHat(t,open=false){
+
+  function drumRim(t){ // rimshot — for syncopation
     try{
-      const ac=getAudio(),db=drumBus,dur=open?0.14:0.045;
-      const bufLen=Math.floor(ac.sampleRate*dur);
-      const buf=ac.createBuffer(1,bufLen,ac.sampleRate),data=buf.getChannelData(0);
-      for(let i=0;i<bufLen;i++) data[i]=Math.random()*2-1;
+      const ac=getAudio(),db=drumBus;
+      const o=ac.createOscillator(),g=ac.createGain();
+      o.type='square'; o.frequency.value=900;
+      g.gain.setValueAtTime(0.18,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.04);
+      o.connect(g); g.connect(db); o.start(t); o.stop(t+0.05);
+    }catch(e){}
+  }
+
+  function drumHat(t, open=false, vol=0.14){
+    try{
+      const ac=getAudio(),db=drumBus;
+      const dur=open?0.18:0.042;
+      const bLen=Math.floor(ac.sampleRate*dur);
+      const buf=ac.createBuffer(1,bLen,ac.sampleRate),data=buf.getChannelData(0);
+      for(let i=0;i<bLen;i++) data[i]=Math.random()*2-1;
       const src=ac.createBufferSource(); src.buffer=buf;
-      const filt=ac.createBiquadFilter(); filt.type='highpass'; filt.frequency.value=open?6000:8000;
+      const filt=ac.createBiquadFilter(); filt.type='highpass'; filt.frequency.value=open?7000:9500;
       const g=ac.createGain();
-      g.gain.setValueAtTime(open?0.20:0.12,t); g.gain.exponentialRampToValueAtTime(0.001,t+dur);
+      g.gain.setValueAtTime(vol*(open?1.4:1),t); g.gain.exponentialRampToValueAtTime(0.001,t+dur);
       src.connect(filt); filt.connect(g); g.connect(db); src.start(t); src.stop(t+dur+0.01);
     }catch(e){}
   }
-  const BASS_NOTES=[55,55,73.4,55,65.4,55,49,55];
-  function beatBass(t,step){
+
+  function drumClap(t){ // layered clap — section D accent
     try{
-      const ac=getAudio(),mb=melodBus,freq=BASS_NOTES[step%BASS_NOTES.length];
-      const osc=ac.createOscillator(),filt=ac.createBiquadFilter(),g=ac.createGain();
-      osc.type='sawtooth'; osc.frequency.value=freq;
-      filt.type='lowpass'; filt.frequency.setValueAtTime(600,t); filt.frequency.exponentialRampToValueAtTime(200,t+0.18); filt.Q.value=4;
-      g.gain.setValueAtTime(0.38,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.22);
-      osc.connect(filt); filt.connect(g); g.connect(mb); osc.start(t); osc.stop(t+0.24);
+      const ac=getAudio(),db=drumBus;
+      [0,0.008,0.016].forEach(dt=>{
+        const bLen=Math.floor(ac.sampleRate*0.14);
+        const buf=ac.createBuffer(1,bLen,ac.sampleRate),data=buf.getChannelData(0);
+        for(let i=0;i<bLen;i++) data[i]=Math.random()*2-1;
+        const src=ac.createBufferSource(); src.buffer=buf;
+        const filt=ac.createBiquadFilter(); filt.type='bandpass'; filt.frequency.value=1800; filt.Q.value=0.5;
+        const g=ac.createGain();
+        g.gain.setValueAtTime(0.5,t+dt); g.gain.exponentialRampToValueAtTime(0.001,t+dt+0.14);
+        src.connect(filt); filt.connect(g); g.connect(db); src.start(t+dt); src.stop(t+dt+0.15);
+      });
     }catch(e){}
   }
-  const ARP_SCALE=[329.6,369.9,392,440,493.8,523.2,587.3,659.2];
-  const ARP_PATTERN=[0,null,2,null,4,2,null,5,null,3,null,6,4,null,2,null];
-  function beatArp(t,step){
-    const idx=ARP_PATTERN[step%16]; if(idx===null) return;
+
+  // ════════════════════════════════════════════
+  // MELODIC VOICES
+  // ════════════════════════════════════════════
+
+  // Plucked bass — punchy, slightly overdriven
+  function mBass(t, freq, dur=0.18, vol=0.55){
     try{
-      const ac=getAudio(),mb=melodBus,freq=ARP_SCALE[idx%ARP_SCALE.length];
-      const osc=ac.createOscillator(),g=ac.createGain();
-      osc.type='square'; osc.frequency.value=freq;
-      g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.07,t+0.008);
+      const ac=getAudio(),mb=melodBus;
+      const o=ac.createOscillator(),filt=ac.createBiquadFilter(),g=ac.createGain();
+      o.type='sawtooth'; o.frequency.value=freq;
+      filt.type='lowpass';
+      filt.frequency.setValueAtTime(1200,t); filt.frequency.exponentialRampToValueAtTime(200,t+dur*0.6);
+      filt.Q.value=5;
+      g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(0.001,t+dur);
+      o.connect(filt); filt.connect(g); g.connect(mb); o.start(t); o.stop(t+dur+0.01);
+    }catch(e){}
+  }
+
+  // Soft pad chord — panned, gentle
+  function mPad(t, freq, dur=0.38, vol=0.08){
+    try{
+      const ac=getAudio(),mb=melodBus;
+      [1, 1.498, 1.782].forEach((ratio,i)=>{ // root, fifth, ~major7
+        const o=ac.createOscillator(),g=ac.createGain();
+        o.type='sine'; o.frequency.value=freq*ratio;
+        g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vol*(1-i*0.25),t+0.03);
+        g.gain.setValueAtTime(vol*(1-i*0.25),t+dur-0.05); g.gain.linearRampToValueAtTime(0,t+dur);
+        o.connect(g); g.connect(mb); o.start(t); o.stop(t+dur+0.02);
+      });
+    }catch(e){}
+  }
+
+  // Chiptune arp — the catchy hook cell (8th-note steps)
+  function mArp(t, freq, vol=0.10){
+    try{
+      const ac=getAudio(),mb=melodBus;
+      const o=ac.createOscillator(),g=ac.createGain();
+      o.type='square'; o.frequency.value=freq;
+      g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vol,t+0.005);
+      g.gain.exponentialRampToValueAtTime(0.001,t+0.11);
+      o.connect(g); g.connect(mb); o.start(t); o.stop(t+0.12);
+    }catch(e){}
+  }
+
+  // Synth lead — the "earworm" melody, triangle + subtle vibrato
+  function mLead(t, freq, dur=0.20, vol=0.18){
+    try{
+      const ac=getAudio(),lb=leadBus;
+      const o=ac.createOscillator(),g=ac.createGain();
+      o.type='triangle'; o.frequency.setValueAtTime(freq,t);
+      // micro vibrato
+      const lfo=ac.createOscillator(),lfog=ac.createGain();
+      lfo.type='sine'; lfo.frequency.value=5.5;
+      lfog.gain.value=freq*0.012;
+      lfo.connect(lfog); lfog.connect(o.frequency); lfo.start(t); lfo.stop(t+dur+0.02);
+      g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vol,t+0.012);
+      g.gain.setValueAtTime(vol,t+dur-0.06); g.gain.exponentialRampToValueAtTime(0.001,t+dur+0.02);
+      o.connect(g); g.connect(lb); o.start(t); o.stop(t+dur+0.04);
+    }catch(e){}
+  }
+
+  // High synth sparkle — section D "drop" layer
+  function mSpark(t, freq, vol=0.07){
+    try{
+      const ac=getAudio(),lb=leadBus;
+      const o=ac.createOscillator(),g=ac.createGain();
+      o.type='sine'; o.frequency.value=freq;
+      g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vol,t+0.006);
       g.gain.exponentialRampToValueAtTime(0.001,t+0.09);
-      osc.connect(g); g.connect(mb); osc.start(t); osc.stop(t+0.10);
+      o.connect(g); g.connect(lb); o.start(t); o.stop(t+0.10);
     }catch(e){}
   }
 
-  const PAT_KICK =[1,0,0,0,0,0,1,0,1,0,0,0,0,0,1,0];
-  const PAT_SNARE=[0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,1];
-  const PAT_HHAT =[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0];
-  const PAT_OPEN =[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1];
-  const PAT_BASS =[1,0,0,1,0,0,1,0,1,0,0,1,0,0,0,0];
+  // ════════════════════════════════════════════
+  // PATTERNS  (32 steps = 2 bars of 16th notes)
+  // ════════════════════════════════════════════
 
-  function scheduleStep(t,step){
-    if(PAT_KICK[step])  beatKick(t);
-    if(PAT_SNARE[step]) beatSnare(t);
-    if(PAT_OPEN[step])  beatHiHat(t,true);
-    else if(PAT_HHAT[step]) beatHiHat(t,false);
-    if(PAT_BASS[step])  beatBass(t,step);
-    beatArp(t,step);
+  // ── GROOVE (section A) ──────────────────────────────────────────
+  // Kick: 1 . . . . . . . 1 . . . 1 . . .  (four-ish with ghost)
+  // Snare: on 2 and 4 (steps 4,12), ghost at 14
+  // Hats: 8th note pairs, open on &4
+  // Bass: funky walking line in Am
+  const GA_KICK  =[1,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0, 1,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0];
+  const GA_SNARE =[0,0,0,0,1,0,0,0,0,0,0,0,1,0,1,0, 0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0];
+  const GA_HAT   =[1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,1, 1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,1];
+  const GA_OPEN  =[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0];
+  const GA_RIM   =[0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0];
+  // Bass notes (null = rest)
+  const GA_BASS  =[N.A2,null,null,N.A2,null,null,N.C3,null,null,N.D3,null,null,N.E3,null,null,null,
+                   N.A2,null,null,N.G3,null,null,N.E3,null,N.D3,null,null,N.A2,null,null,null,null];
+  // Arp pad (root-chord pulse every 4 steps)
+  const GA_PAD   =[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+  const GA_PAD_F =[N.A3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, N.E3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+
+  // ── MELODIC (section B) — same groove + lead hook ───────────────
+  // THE HOOK: A C D E G E D C  /  A C D E A G E D  (Am ascending+descend)
+  const HK=[N.A4,N.C5,N.D5,N.E5,N.G5,N.E5,N.D5,N.C5,
+            N.A4,N.C5,N.D5,N.E5,N.A5,N.G5,N.E5,N.D5];
+  const GB_LEAD  =[1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0, 1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0];
+  // arp: every 2 steps, upper octave arpeggio
+  const GB_ARP_F =[N.A4,null,N.E4,null,N.A4,null,N.G4,null,N.D4,null,N.E4,null,N.G4,null,N.A4,null,
+                   N.C5,null,N.A4,null,N.G4,null,N.E4,null,N.D4,null,N.C4,null,N.A3,null,N.C4,null];
+
+  // ── BUILDUP (section C) — tension rising ────────────────────────
+  // Extra kick offbeats, faster hats, filter sweep upward on bass
+  const GC_KICK  =[1,0,0,0,1,0,0,1,1,0,0,0,1,0,1,0, 1,0,0,0,1,0,0,1,1,0,1,0,1,0,1,1];
+  const GC_HAT   =[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]; // 16th hats!
+  const GC_BASS  =[N.A2,null,N.A2,null,N.C3,null,N.C3,null,N.E3,null,N.E3,null,N.G3,null,N.G3,null,
+                   N.A3,null,N.A3,null,N.C4,null,N.C4,null,N.E4,null,N.E4,null,N.G4,null,N.G4,null];
+  // Rising arp — excitement
+  const GC_ARP_F =[N.A3,N.C4,N.D4,N.E4,N.G4,N.A4,N.C5,N.D5,N.E5,N.G5,N.A5,N.G5,N.E5,N.D5,N.C5,N.A4,
+                   N.G4,N.A4,N.C5,N.E5,N.G5,N.A5,N.G5,N.E5,N.D5,N.E5,N.G5,N.A5,N.G5,N.E5,N.D5,N.C5];
+
+  // ── DROP (section D) — maximum energy ───────────────────────────
+  // Four-on-floor kick, clap on 2&4, rolling hats, thick bass, spark lead
+  const GD_KICK  =[1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0, 1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,1];
+  const GD_CLAP  =[0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0, 0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0];
+  const GD_HAT   =[1,1,0,1,0,1,1,0,1,1,0,1,0,1,1,0, 1,1,0,1,0,1,1,0,1,1,0,1,0,1,0,1];
+  const GD_BASS  =[N.A2,null,N.A2,N.A2,null,N.C3,null,N.D3,N.E3,null,null,N.D3,N.C3,null,N.A2,null,
+                   N.G2,null,N.G2,N.G2,null,N.A2,null,N.C3,N.D3,null,N.E3,null,N.A2,null,N.G2,null];
+  // Spark melody — high octave hook
+  const GD_SPARK =[1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0, 1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0];
+  const GD_SFRQ  =[N.A5,0,N.C5,0,N.E5,0,N.G5,0,N.A5,0,N.G5,0,N.E5,0,N.C5,0,
+                   N.A4,0,N.C5,0,N.E5,0,N.A5,0,N.G5,0,N.E5,0,N.D5,0,N.C5,0,N.A4,0];
+
+  // ════════════════════════════════════════════
+  // SECTION-AWARE SCHEDULER
+  // ════════════════════════════════════════════
+  function scheduleStep(t, ss, secName){
+    const s=ss; // alias
+
+    if(secName==='groove'){
+      if(GA_KICK[s])  drumKick(t, 0.92);
+      if(GA_SNARE[s]) drumSnare(t, GA_SNARE[s]===1?0.55:0.28);
+      if(GA_RIM[s])   drumRim(t);
+      if(GA_OPEN[s])  drumHat(t,true,0.18); else if(GA_HAT[s]) drumHat(t,false,0.13);
+      if(GA_BASS[s])  mBass(t, GA_BASS[s], 0.19);
+      if(GA_PAD[s])   mPad(t, GA_PAD_F[s], 0.38, 0.06);
+      mArp(t, N.A4*(1 + (s%8)*0.03)*0, 0); // no arp in groove (quiet)
+    }
+
+    else if(secName==='melodic'){
+      // reuse groove drums
+      if(GA_KICK[s])  drumKick(t,0.92);
+      if(GA_SNARE[s]) drumSnare(t,0.55);
+      if(GA_RIM[s])   drumRim(t);
+      if(GA_OPEN[s])  drumHat(t,true,0.18); else if(GA_HAT[s]) drumHat(t,false,0.13);
+      if(GA_BASS[s])  mBass(t,GA_BASS[s],0.19);
+      // lead hook every 2 steps
+      if(GB_LEAD[s]){ const hi=Math.floor(s/2)%16; mLead(t,HK[hi],0.18,0.16); }
+      // upper arp
+      if(GB_ARP_F[s]) mArp(t,GB_ARP_F[s],0.09);
+    }
+
+    else if(secName==='buildup'){
+      if(GC_KICK[s])  drumKick(t, s>23?1.0:0.85);
+      if(GA_SNARE[s]) drumSnare(t,0.50);
+      if(GC_HAT[s])   drumHat(t,false,s>16?0.16:0.10); // hats get louder
+      if(GC_BASS[s])  mBass(t,GC_BASS[s],0.12,0.45+s*0.004); // filter opens
+      if(GC_ARP_F[s]) mArp(t,GC_ARP_F[s],0.10+s*0.002);
+    }
+
+    else if(secName==='drop'){
+      if(GD_KICK[s])  drumKick(t,1.0);
+      if(GD_CLAP[s])  drumClap(t);
+      if(GD_HAT[s])   drumHat(t,false,0.16);
+      if(s===14||s===30) drumHat(t,true,0.22); // open hat accent
+      if(GD_BASS[s])  mBass(t,GD_BASS[s],0.17,0.65);
+      if(GD_SPARK[s]&&GD_SFRQ[s]) mSpark(t,GD_SFRQ[s],0.09);
+      // lead hook too (octave lower in drop)
+      if(GB_LEAD[s]){ const hi=Math.floor(s/2)%16; mLead(t,HK[hi]*0.5,0.18,0.14); }
+    }
   }
 
   function schedulerTick(){
     if(!musicRunning) return;
     const ac=getAudio();
-    while(nextStepTime<ac.currentTime+scheduleAhead){
-      scheduleStep(nextStepTime,musicStep);
-      musicStep=(musicStep+1)%16;
+    while(nextStepTime < ac.currentTime+scheduleAhead){
+      const secName=SECTIONS[sectionIdx%4];
+      scheduleStep(nextStepTime, sectionStep, secName);
+
+      sectionStep++;
+      musicStep++;
+      // advance section every 32 steps
+      if(sectionStep>=32){
+        sectionStep=0;
+        sectionIdx++;
+        // update lead bus gain: silent in groove, active from melodic onward
+        const nextSec=SECTIONS[sectionIdx%4];
+        if(leadBus){
+          const tgt=(nextSec==='groove')?0:(nextSec==='melodic')?0.7:(nextSec==='buildup')?0.5:0.85;
+          leadBus.gain.cancelScheduledValues(nextStepTime);
+          leadBus.gain.linearRampToValueAtTime(tgt,nextStepTime+0.3);
+        }
+      }
       nextStepTime+=stepSec();
     }
-    scheduleTimer=setTimeout(schedulerTick,25);
+    scheduleTimer=setTimeout(schedulerTick,20);
   }
 
   function musicStart(){
     if(musicRunning||!S.music) return;
     buildMusicGraph();
     const ac=getAudio();
-    musicRunning=true; musicStep=0; nextStepTime=ac.currentTime+0.05;
+    musicRunning=true; musicStep=0; sectionStep=0; sectionIdx=0;
+    nextStepTime=ac.currentTime+0.05;
     masterGain.gain.cancelScheduledValues(ac.currentTime);
     masterGain.gain.setValueAtTime(masterGain.gain.value,ac.currentTime);
     masterGain.gain.linearRampToValueAtTime(NORMAL_MASTER_GAIN*S.musicVol,ac.currentTime+0.8);
-    // restore normal state
     streakFilter.frequency.setValueAtTime(NORMAL_DRUM_CUTOFF,ac.currentTime);
     melodBus.gain.setValueAtTime(NORMAL_MELOD_GAIN,ac.currentTime);
+    leadBus.gain.setValueAtTime(0,ac.currentTime); // groove starts silent lead
     schedulerTick();
   }
 
@@ -614,7 +820,7 @@
     const ac=audioCtx;
     masterGain.gain.cancelScheduledValues(ac.currentTime);
     masterGain.gain.setValueAtTime(masterGain.gain.value,ac.currentTime);
-    masterGain.gain.linearRampToValueAtTime(0,ac.currentTime+0.4);
+    masterGain.gain.linearRampToValueAtTime(0,ac.currentTime+0.45);
   }
 
   // ── SCREEN SHAKE ─────────────────────────────────────────────────
